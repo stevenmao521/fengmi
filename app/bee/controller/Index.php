@@ -21,6 +21,7 @@ class Index extends Common {
     
     public function index() {
         
+        $this->assign("title", "蜂蜜商城");
         return $this->fetch('index');
     }
 }

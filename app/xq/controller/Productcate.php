@@ -6,7 +6,7 @@ use think\Controller;
 use clt\Form;//表单
 use app\xq\controller\Helper as Helper;//工具类
 
-class Product_cate extends Common{
+class Productcate extends Common{
     protected $modname; #模块名称
     protected $dao; #默认模型
     protected $fields; #字段
@@ -21,8 +21,8 @@ class Product_cate extends Common{
         
         parent::_initialize();
         
-        $this->controller = "members";
-        $this->modname = "用户";
+        $this->controller = "productcate";
+        $this->modname = "商品分类";
         
         $this->moduleid = $this->mod[MODULE_NAME]; #模型id
         $this->logid = 2;

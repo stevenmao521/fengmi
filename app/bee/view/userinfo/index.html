@@ -30,7 +30,7 @@
                 </a>
             </div>
             <div class="group">
-                <a class="group-item" href="my_item.html">
+                <a class="group-item" href="{:url('Userinfo/myteam')}">
                     <div class="group-img">
                         <img src="__STATIC__/bee/img/img17.png" />
                     </div>
@@ -57,7 +57,11 @@
                 <a href="{:url('Userinfo/myshare')}">
                     <div class="box2 "><img class="icon" src="__STATIC__/bee/img/img25.png" />我的推广方式<img class="arrow_img" src="__STATIC__/bee/img/img37.png" /></div>
                 </a>
-                <a href="my_fws.html">
+                {if condition="$info.parent_id gt 0"}
+                <a href="{:url('Userinfo/myservice')}">
+                {else/}
+                <a href="javascript:alert('没有上级服务商');">
+                {/if}
                     <div class="box2 "><img class="icon" src="__STATIC__/bee/img/img24.png" />我的服务商<img class="arrow_img" src="__STATIC__/bee/img/img37.png" /></div>
                 </a>
                 <a href="{:url('Userinfo/myaddress')}">

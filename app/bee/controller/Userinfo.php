@@ -194,4 +194,60 @@ class Userinfo extends Common {
         return $this->fetch();
     }
     
+    #关于我们
+    public function myservice() {
+        $uid = session("userid");
+        $mem = $this->mem_model->where("id='{$uid}'")->find();
+        if ($mem['parent_id']) {
+            $parent = $this->mem_model->where("id='{$mem['parent_id']}'")->find();
+            $this->assign("info", $parent);
+        }
+        $this->assign("title", "我的服务商");
+        return $this->fetch();
+    }
+    
+    #我的团队
+    public function myteam() {
+        $uid = session("userid");
+        $mem_info = $this->mem_model->where("id='{$uid}'")->find();
+        $mem_info['level_name'] = mz_gettype($mem_info['level']);
+        
+        #我的团队
+        $child_list = $this->mem_model
+                ->where("parent_id='{$mem_info['id']}'")
+                ->order("createtime desc")->select();
+                
+        $child_level1 = [];
+        $child_level2 = [];
+        $child_level3 = [];
+        $child_level4 = [];
+                
+        if ($child_list) {
+            foreach ($child_list as $k=>$v) {
+                switch ($v['level']) {
+                    case 1:
+                        $child_level1[] = $v;
+                        break;
+                    case 2:
+                        $child_level2[] = $v;
+                        break;
+                    case 3:
+                        $child_level3[] = $v;
+                        break;
+                    case 4:
+                        $child_level4[] = $v;
+                        break;
+                }
+            }
+        }
+        
+        $this->assign("level1", $child_level1);
+        $this->assign("level2", $child_level2);
+        $this->assign("level3", $child_level3);
+        $this->assign("level4", $child_level4);
+        $this->assign("info", $mem_info);
+        $this->assign("title", "我的团队");
+        return $this->fetch();
+    }
+    
 }

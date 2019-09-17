@@ -25,19 +25,18 @@
         <div class="head-swiper">
             <div class="swiper-container" id="head-swiper">
                 <div class="swiper-wrapper">
-                    <div class="swiper-slide"><img src="__STATIC__/bee/img/ban01.jpg" /></div>
-                    <div class="swiper-slide"><img src="__STATIC__/bee/img/img05.jpg" /></div>
-                    <div class="swiper-slide"><img src="__STATIC__/bee/img/ban01.jpg" /></div>
+                    {volist name="ads_lamp" id="item"}
+                        <div class="swiper-slide"><a href="{:url('News/detail',array('id'=>$item['id']))}"><img src="__PUBLIC__/{$item.adpic}" /></a></div>
+                    {/volist}
                 </div>
                 <!-- Add Pagination -->
                 <div class="swiper-pagination" id="head-swiper-pagination"></div>
             </div>
         </div>
         <div class="home_ban">
-            <li><img src="__STATIC__/bee/img/home_pic01.jpg" /></li>
-            <li><img src="__STATIC__/bee/img/home_pic02.jpg" /></li>
-            <li><img src="__STATIC__/bee/img/home_pic03.jpg" /></li>
-            <li><img src="__STATIC__/bee/img/home_pic04.jpg" /></li>
+            {volist name="ads_news" id="item"}
+                <li><a href="{:url('News/detail',array('id'=>$item['id']))}"><img src="__PUBLIC__/{$item.adpic}" /></a></li>
+            {/volist}
         </div>
         <div class="h25"> </div>
     </section>
@@ -82,24 +81,7 @@
     </section>
 
     <div style="height:1.45rem"></div>
-    <div class="bottom-tab-wrap flex">
-        <div class="item jdjz active">
-            <img class="no-active-icon" src="__STATIC__/bee/img/nav2.png" alt="" srcset="">
-            <img class="active-icon" src="__STATIC__/bee/img/nav2_active.png" alt="" srcset="">
-            <p>蜂蜜商城</p>
-        </div>
-        <div class="item jdjz">
-            <img class="no-active-icon" src="__STATIC__/bee/img/nav3.png" alt="" srcset="">
-            <img class="active-icon" src="__STATIC__/bee/img/nav3_active.png" alt="" srcset="">
-            <p>购物车</p>
-        </div>
-
-        <div class="item jdjz ">
-            <img class="no-active-icon" src="__STATIC__/bee/img/nav4.png" alt="" srcset="">
-            <img class="active-icon" src="__STATIC__/bee/img/nav4_active.png" alt="" srcset="">
-            <p>我的</p>
-        </div>
-    </div>
+    {include file="common/foot"/}
 </body>
 <script src="__STATIC__/bee/js/jquery.min.js"></script>
 <script src="__STATIC__/bee/js/circleChart.min.js"></script>

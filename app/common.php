@@ -1085,3 +1085,23 @@ function mz_getDatesBetweenTwoDays($startDate,$endDate){
         return $dates;
     }
 }
+
+#=============================================================
+#===================业务方法==================================
+#用户等级
+function mz_gettype($level) {
+    switch ($level) {
+        case 1:
+            return "普通会员";
+            break;
+        case 2:
+            return "业务员";
+            break;
+        case 3:
+            return "销售主管";
+            break;
+        case 4:
+            return "销售总监";
+            break;
+    }
+}

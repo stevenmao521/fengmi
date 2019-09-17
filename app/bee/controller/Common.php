@@ -21,6 +21,9 @@ class Common extends Controller{
         $this->assign('controller',strtolower($controller));
         define('MODULE_NAME',strtolower($controller));
         define('ACTION_NAME',strtolower($action));
+        
+        #用户登录检测
+        session("userid", 12);
     }
     
     public function _empty(){

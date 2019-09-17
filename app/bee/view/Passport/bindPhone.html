@@ -7,7 +7,7 @@
     <body>
         <div class="wrapper">
             <div class="container">
-                <form class="account-form" id="form2">
+                <form class="account-form" id="form2" method="POST">
                     <div class="account-form-group">
                         <div class="headline">
                             <p>绑定手机号</p>
@@ -16,7 +16,7 @@
                     <div class="account-form-group">
                         <input class="account-form-control form-input" id="phone" type="tel" maxlength="11" placeholder="请输入手机号">
                         <div class="account-form-guide account-form-clear">
-                            <a href="#"><img class="icon" src="img/img13.png"></img>
+                            <a href="#"><img class="icon" src="__STATIC__/bee/img/img13.png">
                             </a>
                         </div>
                     </div>
@@ -28,11 +28,12 @@
                     </div>
 
                     <div class="account-form-group button-row">
-                        <a class="account-btn off" href="javascript:void(0);" onClick="submitBtn()">绑定手机号码</a>
+                        <a class="account-btn off" href="javascript:void(0);" id="bindBtn" onClick="submitBtn()">绑定手机号码</a>
                     </div>
                     <div class="account-form-group  err-tips-box" >
                         <div class="err-tips" id="errMsg" style="display:none;"></div>
                     </div>
+                </form>
             </div>
         </div>
     </div>
@@ -63,7 +64,7 @@
             }
         });
         
-        
+        //倒计时
         var countdown = 60;
         function settime() {
             if(countdown == 0) {
@@ -79,6 +80,56 @@
             },1000);
         }
         
+        //离开焦点
+        $('#pass-code').blur(function(){
+            var phone = $('#phone').val();
+            var code = $('#pass-code').val();
+            if (phone !="" && code != "") {
+                $('#bindBtn').removeClass("off").addClass("on");
+            }
+        });
+        
+        $("#pass-code").bind('input propertychange',function () {
+            var phone = $('#phone').val();
+            var code = $('#pass-code').val();
+            if (phone !="" && code != "") {
+                $('#bindBtn').removeClass("off").addClass("on");
+            }
+        });
+        
+        //提交
+        function submitBtn() {
+            var phone = $('#phone').val();
+            var code = $('#pass-code').val();
+            if (phone == "") {
+                errMsg("手机号不能为空");
+                return false;
+            }
+            var pattern = /^1[34578]\d{9}$/;
+            if (!pattern.test(phone)) {
+                errMsg("手机号码格式不正确");
+                return false;
+            }
+            if (code == "") {
+                errMsg("验证码不能为空");
+                return false;
+            }
+            $.ajax({
+                url:"{:url('Passport/bindPhone')}",
+                type:'post',
+                dataType:'json',
+                data:{phone:phone,code:code,ispost:1},
+                success:function(data){
+                    if (data.code == 1) {
+                        //绑定成功跳转个人中心
+                        errMsg(data.msg);
+                        location.href = "{:url('Userinfo/index')}";
+                    } else {
+                        errMsg(data.msg);
+                    }
+                }
+            });
+        }
         
         function errMsg(txt) {
             $('#errMsg').html(txt);    

@@ -85,7 +85,6 @@ class Common extends Controller
                 foreach ($count['fields'] as $k => $v) {
                     $sum_total = $this->dao
                             ->where($sel_map)
-                            ->where("isfb=0")
                             ->sum($v['field']);
                     $sum[$v['field']] = $sum_total;
                 }

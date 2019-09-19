@@ -6,7 +6,7 @@ use think\Controller;
 use clt\Form;//表单
 use app\xq\controller\Helper as Helper;//工具类
 
-class Productcate extends Common{
+class Producttag extends Common{
     protected $modname; #模块名称
     protected $dao; #默认模型
     protected $fields; #字段
@@ -21,8 +21,8 @@ class Productcate extends Common{
         
         parent::_initialize();
         
-        $this->controller = "productcate";
-        $this->modname = "商品分类";
+        $this->controller = "producttag";
+        $this->modname = "商品标签";
         
         $this->moduleid = $this->mod[MODULE_NAME]; #模型id
         $this->logid = 2;
@@ -45,17 +45,6 @@ class Productcate extends Common{
         $this->assign('moduleid', $this->moduleid);
         $this->assign ('fields',$this->fields);#新增编辑字段
         $this->assign('modname', $this->modname);
-    }
-    
-    //字段排序
-    public function listOrder(){
-        $model =db('productcate');
-        $data = input('post.');
-        if($model->update($data)!==false){
-            return $result = ['msg' => '操作成功！','url'=>url('productcate/index'), 'code' => 1];
-        }else{
-            return $result = ['code'=>0,'msg'=>'操作失败！'];
-        }
     }
     
 }

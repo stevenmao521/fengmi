@@ -47,4 +47,15 @@ class Product extends Common{
         $this->assign('modname', $this->modname);
     }
     
+    //字段排序
+    public function listOrder(){
+        $model =db('productcate');
+        $data = input('post.');
+        if($model->update($data)!==false){
+            return $result = ['msg' => '操作成功！','url'=>url('productcate/index'), 'code' => 1];
+        }else{
+            return $result = ['code'=>0,'msg'=>'操作失败！'];
+        }
+    }
+    
 }

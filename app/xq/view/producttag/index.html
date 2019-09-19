@@ -48,9 +48,7 @@
     <a class="layui-btn layui-btn-danger layui-btn-mini" lay-event="del">{:lang('del')}</a>
 </script>
 
-<script type="text/html" id="order">
-    <input name="{{d.id}}" data-id="{{d.id}}" class="list_order layui-input order" value=" {{d.listorder}}" size="10" />
-</script>
+
 <!--字段js模版-->
 {$js_tmp}
 
@@ -72,7 +70,6 @@
                 {checkbox:true,fixed: true},
                 //服务端赋值字段
                 {$js_str}
-                {field: 'listorder', title: '{:lang("order")}', width: 100, sort: true,templet: '#order'},
                 {width: 180, align: 'center', toolbar: '#action',fixed:'right'}
             ]
             ],
@@ -81,21 +78,6 @@
             },
             limit: 10 //每页默认显示的数量
             ,size: 'sm' //小尺寸的表格
-        });
-        
-        $('body').on('blur','.order',function() {
-            var id = $(this).attr('data-id');
-            var listorder = $(this).val();
-            var loading = layer.load(1, {shade: [0.1, '#fff']});
-            $.post('{:url("listOrder")}',{id:id,listorder:listorder,moduleid:"{:input('id')}"},function(res){
-                layer.close(loading);
-                if(res.code===1){
-                    layer.msg(res.msg,{time:1000,icon:1});
-                    tableIn.reload();
-                }else{
-                    layer.msg(res.msg,{time:1000,icon:2});
-                }
-            })
         });
         
         //搜索

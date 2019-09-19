@@ -1105,3 +1105,16 @@ function mz_gettype($level) {
             break;
     }
 }
+
+#用户等级
+function mz_gettag($tagid) {
+    $tag_model = model("producttag");
+    $tag_name = $tag_model->where("id='{$tagid}'")->field("name")->find();
+    return $tag_name['name'];
+}
+
+#获取首图
+function mz_pic($pics) {
+    $pics_arr = explode(";",$pics);
+    return $pics_arr[0];
+}

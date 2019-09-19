@@ -41,17 +41,21 @@
         <div class="h25"> </div>
     </section>
 
+    {if condition="$user.level eq 1"}
+    <a href="{:url('Mall/detail',array('id'=>$first['id']))}">
     <section class="category-wrap">
         <div class="home_sg">
             <p>首购有礼</p>
             <span class="tips">* 仅限新会员购买 *</span>
         </div>
         <div class="home_sgsp">
-            <li><span class="pic_tips">限首购用户</span><img src="__STATIC__/bee/img/pic01.jpg" /></li>
-            <li class="title">云南原始森林野生地下土酸蜂蜜树酸蜂蜜老巢蜜纯正天然1000g药花蜜</li>
-            <li class="jiage">¥ <span>398.00</span><span class="fr tips">6213人已购买</span></li>
+            <li><span class="pic_tips">{$first.tag_name}</span><img src="__PUBLIC__/{$first.pic}" /></li>
+            <li class="title">{$first.name}</li>
+            <li class="jiage">¥ <span>{$first.price}</span><span class="fr tips">{$first.selnums}人已购买</span></li>
         </div>
     </section>
+    </a>
+    {/if}
 
     <section class="category-wrap">
         <div class="home_sg">

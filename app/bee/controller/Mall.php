@@ -20,7 +20,9 @@ class Mall extends Common {
     protected $mem_model;
     protected $product_model;
     protected $cart_model;
-
+    protected $order_model;
+    protected $order_detail_model;
+    protected $address_model;
 
     public function _initialize() {
         parent::_initialize();
@@ -29,6 +31,9 @@ class Mall extends Common {
         $this->mem_model = model("Members");
         $this->product_model = model("Product");
         $this->cart_model = model("Cart");
+        $this->order_model = model("Order");
+        $this->order_detail_model = model("Orderdetail");
+        $this->address_model = model("Address");
     }
     
     public function detail() {
@@ -106,19 +111,86 @@ class Mall extends Common {
     public function addorder() {
         $uid = session("userid");
         $data = input("data");
+        $member = $this->mem_model->where("id='{$uid}'")->find();
+        
         
         if (!$data) {
             return mz_apierror("订单创建失败");
         } else {
             $data = substr($data,0,-1);
-            if (strpos($data, ",")) {
-                $data_arr = explode(",", $data);
-                
-                
-            } else {
-                
-                
+            
+            $address = $this->address_model->where("uid='{$uid}' and isdef")->find();
+            if (!$address) {
+                $address = $this->address_model->where("uid='{$uid}'")->order("id desc")->find();
             }
+            
+            
+            
+            Db::startTrans();
+            try {
+                
+                
+                if (strpos($data, ",")) {
+                
+                    #插入订单
+                    $order_data = array();
+                    $order_data['orderid'] = mz_get_order_sn();
+                    if ($address) {
+                        $order_data['address_id'] = $address['id'];
+                        $order_data['addrname'] = $address['uname'];
+                        $order_data['addrmobile'] = $address['mobile'];
+                        $order_data['addrdetail'] = $address['pro_city_reg'].$address['detail'];
+                    }
+                    $order_data['createtime'] = time();
+                    $res = Db::name('Order')->insert($order_data);
+                    
+                    
+                    $total_price = 0;
+                    $data_arr = explode(",", $data);
+                    foreach ($data_arr as $k=>$v) {
+                        $data_exp = explode("_", $v);
+                        $product_info = $this->product_model->where("id='{$data_exp[0]}'")->find();
+                        if ($product_info) {
+                            if ($member['level'] == 1) {
+                                $total_price += $product_info['price'] * $data_exp[1];
+                            } else {
+                                $total_price += $product_info['reprice'] * $data_exp[1];
+                            }
+                        }
+                        
+                        $detail_data = array();
+                        $detail_data['oid'] = $res;
+                        $detail_data['product_id'] = $res;
+                        $detail_data['product_name'] = $res;
+                        $detail_data['nums'] = $res;
+                        $detail_data['price'] = $res;
+                        $detail_data['isrebate'] = $res;
+                        
+                    }
+                    
+                    
+                } else {
+
+
+                }
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+            } catch (\Exception $e) {
+                // 回滚事务
+                Db::rollback();
+            }
+
+            
             
             
             

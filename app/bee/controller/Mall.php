@@ -124,79 +124,163 @@ class Mall extends Common {
                 $address = $this->address_model->where("uid='{$uid}'")->order("id desc")->find();
             }
             
-            
-            
             Db::startTrans();
             try {
-                
-                
                 if (strpos($data, ",")) {
-                
                     #插入订单
                     $order_data = array();
                     $order_data['orderid'] = mz_get_order_sn();
                     if ($address) {
-                        $order_data['address_id'] = $address['id'];
+                        $order_data['addressid'] = $address['id'];
                         $order_data['addrname'] = $address['uname'];
                         $order_data['addrmobile'] = $address['mobile'];
                         $order_data['addrdetail'] = $address['pro_city_reg'].$address['detail'];
+                    } else {
+                        return mz_apierror("请先添加收获地址");
                     }
+                    $order_data['uid'] = $uid;
                     $order_data['createtime'] = time();
-                    $res = Db::name('Order')->insert($order_data);
+                    $res = Db::name('Order')->insert($order_data, false, true);
+                    
+                    #更新之前未付款的订单未废弃订单 status=2
+                    $res_up_order = Db::name('Order')->where("id!='{$res}' and uid='{$uid}' and haspay=0")->update(array("status"=>2));
                     
                     
                     $total_price = 0;
+                    $total_nums = 0;
                     $data_arr = explode(",", $data);
                     foreach ($data_arr as $k=>$v) {
                         $data_exp = explode("_", $v);
-                        $product_info = $this->product_model->where("id='{$data_exp[0]}'")->find();
+                        $cart_info = Db::name('Cart')->where("id='{$data_exp[0]}'")->find();
+                        $product_info = Db::name('Product')->where("id='{$cart_info['product_id']}'")->find();
                         if ($product_info) {
                             if ($member['level'] == 1) {
                                 $total_price += $product_info['price'] * $data_exp[1];
                             } else {
                                 $total_price += $product_info['reprice'] * $data_exp[1];
                             }
+                            $total_nums += $data_exp[1];
                         }
                         
                         $detail_data = array();
                         $detail_data['oid'] = $res;
-                        $detail_data['product_id'] = $res;
-                        $detail_data['product_name'] = $res;
-                        $detail_data['nums'] = $res;
-                        $detail_data['price'] = $res;
-                        $detail_data['isrebate'] = $res;
+                        $detail_data['product_id'] = $product_info['id'];
+                        $detail_data['product_name'] = $product_info['name'];
+                        $detail_data['nums'] = $data_exp[1];
+                        if ($member['level'] == 1) {
+                            $detail_data['price'] = $product_info['price'];
+                        } else {
+                            $detail_data['price'] = $product_info['reprice'];
+                        }
+                        $detail_data['isrebate'] = $product_info['isrebate'];
+                        $detail_data['createtime'] = time();
+                        $res_1 = Db::name('Orderdetail')->insert($detail_data);
                         
+                        #删除购物车相应产品
+                        $res_2 = Db::name('Cart')->where("product_id='{$product_info['id']}' and uid='{$uid}'")->delete();
                     }
+                    Db::name('Order')->where("id='{$res}'")->update(array("total_price"=>$total_price,"total_nums"=>$total_nums));
                     
-                    
+                    if ($res && $res_1 && $res_2) {
+                        Db::commit();
+                        return mz_apisuccess("订单创建成功");
+                    } else {
+                        return mz_apierror("订单创建失败");
+                    }
                 } else {
+                    #插入订单
+                    $order_data = array();
+                    $order_data['orderid'] = mz_get_order_sn();
+                    if ($address) {
+                        $order_data['addressid'] = $address['id'];
+                        $order_data['addrname'] = $address['uname'];
+                        $order_data['addrmobile'] = $address['mobile'];
+                        $order_data['addrdetail'] = $address['pro_city_reg'].$address['detail'];
+                    } else {
+                        return mz_apierror("请先添加收获地址");
+                    }
+                    $order_data['uid'] = $uid;
+                    $order_data['createtime'] = time();
+                    $res = Db::name('Order')->insert($order_data, false, true);
+                    
+                    #更新之前未付款的订单未废弃订单 status=2
+                    $res_up_order = Db::name('Order')->where("id!='{$res}' and uid='{$uid}' and haspay=0")->update(array("status"=>2));
+                    
+                    $total_price = 0;
+                    $total_nums = 0;
+                    
+                    $data_exp = explode("_", $data);
+                    $cart_info = Db::name('Cart')->where("id='{$data_exp[0]}'")->find();
+                    $product_info = Db::name('Product')->where("id='{$cart_info['product_id']}'")->find();
+                    
+                    if ($product_info) {
+                        if ($member['level'] == 1) {
+                            $total_price = $product_info['price'] * $data_exp[1];
+                        } else {
+                            $total_price = $product_info['reprice'] * $data_exp[1];
+                        }
+                        $total_nums = $data_exp[1];
+                    }
 
-
+                    $detail_data = array();
+                    $detail_data['oid'] = $res;
+                    $detail_data['product_id'] = $product_info['id'];
+                    $detail_data['product_name'] = $product_info['name'];
+                    $detail_data['nums'] = $data_exp[1];
+                    if ($member['level'] == 1) {
+                        $detail_data['price'] = $product_info['price'];
+                    } else {
+                        $detail_data['price'] = $product_info['reprice'];
+                    }
+                    $detail_data['isrebate'] = $product_info['isrebate'];
+                    $detail_data['createtime'] = time();
+                    $res_1 = Db::name('Orderdetail')->insert($detail_data);
+                    
+                    #删除购物车相应产品
+                    $res_2 = Db::name('Cart')->where("product_id='{$product_info['id']}' and uid='{$uid}'")->delete();
+                    
+                    Db::name('Order')->where("id='{$res}'")->update(array("total_price"=>$total_price,"total_nums"=>$total_nums));
+                    if ($res && $res_1 && $res_2) {
+                        Db::commit();
+                        return mz_apisuc("订单创建成功");
+                    } else {
+                        return mz_apierror("订单创建失败");
+                    }
                 }
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
-                
             } catch (\Exception $e) {
                 // 回滚事务
                 Db::rollback();
+                return mz_apierror("订单创建失败");
             }
-
-            
-            
-            
-            
         }
-        
     }
     
+    #订单详情页
+    public function orderdetail() {
+        $uid = session("userid");
+        $order_info = $this->order_model->where("uid='{$uid}' and status=0")->order("createtime desc")->find();
+        #订单商品
+        $product_detail = $this->order_detail_model->where("oid='{$order_info['id']}'")->find();
+        $product_info = $this->product_model->where("id='{$product_detail['product_id']}'")->find();
+        $product_detail['pic'] = mz_pic($product_info['pics']);
+        
+        
+        $this->assign("order", $order_info);
+        $this->assign("product_detail", $product_detail);
+        $this->assign("title", "订单");
+        return $this->fetch();
+    }
+    
+    #订单测试已付款
+    public function orderpay() {
+        $uid = session("userid");
+        $id = input("id");
+        $res = $this->order_model->where("id='{$id}'")->update(array('haspay'=>1,'paytime'=>time(),"status"=>1));
+        if ($res) {
+            return mz_apisuc("支付成功");
+        } else {
+            return mz_apierror("支付失败");
+        }
+    }
     
 }

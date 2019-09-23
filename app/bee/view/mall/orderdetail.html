@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+    {include file="common/head"/}
+    <style>
+        .left-icon {
+            margin-left: 3vw;
+            width: 9vw;
+            height: 9vw;
+        }
+        .left-icon img {
+            width: 100%;
+            height: 100%;
+        }
+        .left-icon canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+
+<body class="">
+
+    <section class="category-wrap">
+        <div class="home_fugou">
+            <li class="img"><img src="__PUBLIC__{$product_detail.pic}" /></li>
+            <li class="title text1">{$product_detail.product_name}</li>
+            <li class="jiage">¥ <span>{$product_detail.price}</span></li>
+        </div>
+        <div class="tips_h25"></div>
+        <div class="content-warp">
+            <div class="goods-address">
+                <h1 class="address-title">收货地址</h1>
+                <a class="address-infor arrow" href="javascript:;">
+                    <h3 class="address-user"><span class="name">{$order.addrname}</span> <span class="tel">{$order.addrmobile}</span></h3>
+                    <p class="address-detail">{$order.addrdetail}</p>
+                    <img class="arrow_img" src="__STATIC__/bee/img/img37.png" />
+                </a>
+            </div>
+        </div>
+        <div class="tips_h25"></div>
+
+        <div class="content-warp">
+            <div class="buy-declare">
+                <h1 class="declare-title">说明</h1>
+                <div class="declare-list">
+                    <p class="declare-text">1. 购买商品会优先使用账户的余额或代金券支付；</p>
+                    <p class="declare-text">2. 当余额/代金券不足时可选择在线支付或去我的钱包充值；</p>
+                    <p class="declare-text">3. 充值的余额不会过期、不能提现或转账。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="page-foot-btn-box ">
+        <div class="page-foot-btn dianbo">
+            <p class="price"><span class="adorn">￥</span>{$order.total_price}</p>
+            <p class="name">共<span class="num">{$order.total_nums}</span>件商品</p>
+            <a class="buy" href="javascript:;" onclick="pay_order({$order.id});">立即购买</a>
+        </div>
+    </div>
+</body>
+<script src="__STATIC__/bee/js/jquery.min.js"></script>
+<script src="__STATIC__/bee/js/circleChart.min.js"></script>
+<script>
+    let size = $(".left-icon").width()
+    $(".left-icon").circleChart({
+        size: size,
+        value: 50,
+        color: "#209e85",
+    });
+    $('.zhuanti-list .chufa').on('click', function () {
+        $(this).parents('.item').toggleClass('open');
+        // $(this).parents('.item-h').siblings('.item-b').slideToggle();
+    })
+    $('.bottom-tab-wrap .item').on('click', function () {
+        if ($(this).hasClass('active'))
+            return false;
+        $(this).addClass('active').siblings().removeClass('active')
+    })
+</script>
+<script>
+    var swiper = new Swiper('#head-swiper', {
+        pagination: {
+            el: '#head-swiper-pagination',
+            clickable: true,
+        },
+    });
+    var swiper = new Swiper('.live-swiper', {
+        slidesPerView: 'auto',
+    });
+    new Swiper('#nav-swiper', {
+        slidesPerView: 4.6,
+        spaceBetween: 0,
+    });
+    
+    //支付订单
+    function pay_order(id) {
+        $.ajax({
+            url:"{:url('Mall/orderpay')}",
+            type:'post',
+            dataType:'json',
+            data:{id:id},
+            success:function(data){
+                if (data.code == 1) {
+                    //跳转订单详情页
+                    location.href = "{:url('Index/index')}";
+                } else {
+                    alert(data.msg);
+                }
+            }
+        });
+    }
+</script>
+</html>

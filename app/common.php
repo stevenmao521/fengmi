@@ -1118,3 +1118,18 @@ function mz_pic($pics) {
     $pics_arr = explode(";",$pics);
     return $pics_arr[0];
 }
+
+#订单状态
+function mz_getstatus($status) {
+    switch ($status) {
+        case 1:
+            return "待发货";
+            break;
+        case 3:
+            return "已发货";
+            break;
+        case 4:
+            return "已完成";
+            break;
+    }
+}

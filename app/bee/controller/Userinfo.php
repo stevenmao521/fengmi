@@ -19,7 +19,9 @@ class Userinfo extends Common {
     protected $helper;
     protected $mem_model;
     protected $addr_model;
-
+    protected $order_model;
+    protected $orderdetail_model;
+    protected $product_model;
 
     public function _initialize() {
         parent::_initialize();
@@ -27,6 +29,9 @@ class Userinfo extends Common {
         $this->helper = new HelperDao();
         $this->mem_model = model("Members");
         $this->addr_model = model("Address");
+        $this->order_model = model("Order");
+        $this->orderdetail_model = model("Orderdetail");
+        $this->product_model = model("Product");
     }
     
     public function index() {
@@ -247,6 +252,85 @@ class Userinfo extends Common {
         $this->assign("level4", $child_level4);
         $this->assign("info", $mem_info);
         $this->assign("title", "我的团队");
+        return $this->fetch();
+    }
+    
+    #我的订单
+    public function myorder() {
+        $uid = session("userid");
+        $type = input("type");
+        $page = input("page") ? input("page") : 1;
+        $pagesize = 10;
+        
+        $start = ($page-1)*10;
+        $end = $page*10;
+        
+        if (!$type) {
+            $type = "all";
+        }
+        
+        switch ($type) {
+            case "all":
+                $condition = " 1=1 ";
+                break;
+            case "send":
+                $condition = " status=1 ";
+                break;
+            case "hassend":
+                $condition = " status=3 ";
+                break;
+            case "finish":
+                $condition = " status=4 ";
+                break;
+        }
+                    
+        $order_list = $this->order_model
+            ->where("uid='{$uid}' and status!=2")
+            ->where($condition)
+            ->order("createtime","desc")
+            ->limit($start,$end)
+            ->select();
+        
+        if ($order_list) {
+            foreach ($order_list as $k=>$v) {
+                $order_detail = $this->orderdetail_model->where("oid='{$v['id']}'")->find();
+                $product_info = $this->product_model->where("id='{$order_detail['product_id']}'")->find();
+                $order_list[$k]['pic'] = mz_pic($product_info['pics']);
+                $order_list[$k]['product_name'] = $product_info['name'];
+                $order_list[$k]['createtime'] = date('Y-m-d H:i:s',$v['createtime']);
+                $order_list[$k]['status'] = mz_getstatus($v['status']);
+            }
+        }
+        
+        $this->assign("type", $type);
+        $this->assign("order_list", $order_list);
+        $this->assign("title", "我的订单");
+        return $this->fetch();
+    }
+    
+    #订单详情
+    public function orderdetail() {
+        $uid = session("uid");
+        $id = input("id");
+        if (!$id) {
+            $this->error("参数错误");
+        }
+        
+        $order_info = $this->order_model->where("id='{$id}'")->find();
+        $status = $order_info['status'];
+        $order_info['status'] = mz_getstatus($order_info['status']);
+        $order_info['createtime'] = date("Y-m-d H:i:s", $order_info['createtime']);
+        
+        $order_detail = $this->orderdetail_model->where("oid='{$order_info['id']}'")->select();
+        foreach ($order_detail as $k=>$v) {
+            $product = $this->product_model->where("id='{$v['product_id']}'")->find();
+            $order_detail[$k]['pic'] = mz_pic($product['pics']);
+            $order_detail[$k]['total_price'] = $v['price'] * $v['nums'];
+        }
+        
+        $this->assign("status", $status);
+        $this->assign("order_info", $order_info);
+        $this->assign("order_detail", $order_detail);
         return $this->fetch();
     }
     

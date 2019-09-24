@@ -54,7 +54,6 @@ class Mall extends Common {
     }
 
     #加入购物车
-
     public function addcart() {
         $id = input("id");
         $uid = session("userid");
@@ -91,7 +90,6 @@ class Mall extends Common {
     }
 
     #购物车列表
-
     public function cart() {
         $uid = session("userid");
 
@@ -113,7 +111,6 @@ class Mall extends Common {
     }
 
     #创建订单
-
     public function addorder() {
         $uid = session("userid");
         $data = input("data");
@@ -180,6 +177,7 @@ class Mall extends Common {
                         }
                         $detail_data['isrebate'] = $product_info['isrebate'];
                         $detail_data['createtime'] = time();
+                        $detail_data['bottles'] = $data_exp[1] * $product_info['bottles'];
                         $res_1 = Db::name('Orderdetail')->insert($detail_data);
 
                         #删除购物车相应产品
@@ -239,12 +237,12 @@ class Mall extends Common {
                         $detail_data['price'] = $product_info['reprice'];
                     }
                     $detail_data['isrebate'] = $product_info['isrebate'];
+                    $detail_data['bottles'] = $data_exp[1] * $product_info['bottles'];
                     $detail_data['createtime'] = time();
                     $res_1 = Db::name('Orderdetail')->insert($detail_data);
 
                     #删除购物车相应产品
                     $res_2 = Db::name('Cart')->where("product_id='{$product_info['id']}' and uid='{$uid}'")->delete();
-
                     Db::name('Order')->where("id='{$res}'")->update(array("total_price" => $total_price, "total_nums" => $total_nums));
                     if ($res && $res_1 && $res_2) {
                         Db::commit();
@@ -262,7 +260,6 @@ class Mall extends Common {
     }
 
     #立即购买
-
     public function addordernow() {
         $uid = session("userid");
         $member = $this->mem_model->where("id='{$uid}'")->find();
@@ -337,7 +334,6 @@ class Mall extends Common {
     }
 
     #订单详情页
-
     public function orderdetail() {
         $uid = session("userid");
         $order_info = $this->order_model->where("uid='{$uid}' and status=0")->order("createtime desc")->find();
@@ -354,7 +350,6 @@ class Mall extends Common {
     }
 
     #订单测试已付款
-
     public function orderpay() {
         $uid = session("userid");
         $id = input("id");

@@ -1133,3 +1133,18 @@ function mz_getstatus($status) {
             break;
     }
 }
+
+#流水记录
+function mz_flow($uid, $oid="", $type, $money, $des, $balance) {
+    $memberflow_model = model("Memberflow");
+    
+    $memberflow_model->insert(array(
+        "uid"=>$uid,
+        "orderid"=>$oid,
+        "type"=>$type,
+        "money"=>$money,
+        "des"=>$des,
+        "createtime"=>time(),
+        "balance"=>$balance ? $balance : 0
+    ));
+}

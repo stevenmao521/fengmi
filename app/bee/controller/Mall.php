@@ -178,6 +178,8 @@ class Mall extends Common {
                         $detail_data['isrebate'] = $product_info['isrebate'];
                         $detail_data['createtime'] = time();
                         $detail_data['bottles'] = $data_exp[1] * $product_info['bottles'];
+                        $detail_data['isnew'] = $product_info['isnew'];
+                        
                         $res_1 = Db::name('Orderdetail')->insert($detail_data);
 
                         #删除购物车相应产品
@@ -238,6 +240,7 @@ class Mall extends Common {
                     }
                     $detail_data['isrebate'] = $product_info['isrebate'];
                     $detail_data['bottles'] = $data_exp[1] * $product_info['bottles'];
+                    $detail_data['isnew'] = $product_info['isnew'];
                     $detail_data['createtime'] = time();
                     $res_1 = Db::name('Orderdetail')->insert($detail_data);
 
@@ -316,6 +319,8 @@ class Mall extends Common {
                 $detail_data['price'] = $product_info['reprice'];
             }
             $detail_data['isrebate'] = $product_info['isrebate'];
+            $detail_data['bottles'] = $product_info['bottles'];
+            $detail_data['isnew'] = $product_info['isnew'];
             $detail_data['createtime'] = time();
             $res_1 = Db::name('Orderdetail')->insert($detail_data);
 

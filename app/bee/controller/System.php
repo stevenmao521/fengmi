@@ -54,6 +54,20 @@ class System extends Common {
         $order_info = $this->order_model->where("id='{$id}'")->find();
         $order_detail = $this->orderdetail_model->where("oid='{$id}'")->select();
         
+        #更新用户等级
+        $member_info = $this->mem_model->where("id='{$uid}'")->find();
+        if ($member_info['level'] == 1) {
+            #进行升级，并记录日志
+            $ins_data = array();
+            $ins_data['uid'] = $uid;
+            $ins_data['direct_nums'] = 0;
+            $ins_data['indirect_nums'] = 0;
+            $ins_data['des'] = "达到 业务员 等级进行升级";
+            $ins_data['createtime'] = time();
+            $this->levellog_model->insert($ins_data);
+            $this->mem_model->where("id='{$uid}'")->update(array("level"=>2));
+        }
+        
         #业绩加成
         if ($order_detail) {
             foreach ($order_detail as $k=>$v) {
@@ -67,16 +81,199 @@ class System extends Common {
                 $this->doresult($uid, $bottles);
             }
         }
+        return mz_apisuc("订单完成成功");
     }
     
     #处理提成
     #isrebate 2：参与分佣
     public function doachieve($uid, $isrebate, $orderdetail) {
-        #
-        if ($isrebate == 2) {
-            
+        $sysconfig = $this->sysconfig_model->select();
+        if (!$sysconfig) {
+            $sysconfig = array(
+                "0"=>["level"=>4,"direct_price"=>170,"second_price"=>120,"third_price"=>20],
+                "1"=>["level"=>3,"direct_price"=>150,"second_price"=>100,"third_price"=>0],
+                "2"=>["level"=>2,"direct_price"=>50,"second_price"=>0,"third_price"=>0],
+            );
         }
-        
+
+        #是否参佣
+        if ($isrebate == 2) {
+            #新用户购买 还是 复购
+            if ($orderdetail['isnew'] == 1) {
+                #瓶数
+                $bottels = $orderdetail['bottles'];
+                
+                #分佣
+                $result = $this->recurrence_achieve($uid);
+                
+                if ($result) {
+                    #只有业务员
+                    if ($result['level2'] && !$result['level3'] && !$result['level4']) {
+                        foreach ($sysconfig as $k=>$v) {
+                            if ($v['level'] == 2) {
+                                $re_uid = $result['level2'];
+                                $money = $v['direct_price'] * $bottels;
+                                
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
+                                $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
+                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "业务员直推提成", $balance[0]);
+                            }
+                        }
+                    }
+                    
+                    #只有主管
+                    if ($result['level3'] && !$result['level2'] && !$result['level4']) {
+                        foreach ($sysconfig as $k=>$v) {
+                            if ($v['level'] == 3) {
+                                $re_uid = $result['level3'];
+                                $money = $v['direct_price'] * $bottels;
+                                
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
+                                $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
+                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "销售主管直推提成", $balance[0]);
+                            }
+                        }
+                    }
+                    
+                    #只有总监
+                    if ($result['level4'] && !$result['level2'] && !$result['level3']) {
+                        foreach ($sysconfig as $k=>$v) {
+                            if ($v['level'] == 4) {
+                                $re_uid = $result['level4'];
+                                $money = $v['direct_price'] * $bottels;
+                                
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
+                                $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
+                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "销售总监直推提成", $balance[0]);
+                            }
+                        }
+                    }
+                    
+                    #业务员+主管
+                    if ($result['level2'] && !$result['level3'] && !$result['level4']) {
+                        foreach ($sysconfig as $k=>$v) {
+                            if ($v['level'] == 2) {
+                                $re_uid = $result['level2'];
+                                $money = $v['direct_price'] * $bottels;
+                                
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
+                                $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
+                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "业务员直推提成", $balance[0]);
+                            }
+                            if ($v['level'] == 3) {
+                                $re_uid = $result['level3'];
+                                $money = $v['second_price'] * $bottels;
+                                
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
+                                $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
+                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "下级业务员推销提成", $balance[0]);
+                            }
+                        }
+                    }
+                    
+                    #业务员+总监
+                    if ($result['level2'] && $result['level4'] && !$result['level3']) {
+                        foreach ($sysconfig as $k=>$v) {
+                            if ($v['level'] == 2) {
+                                $re_uid = $result['level2'];
+                                $money = $v['direct_price'] * $bottels;
+                                
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
+                                $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
+                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "业务员直推提成", $balance[0]);
+                            }
+                            if ($v['level'] == 4) {
+                                $re_uid = $result['level4'];
+                                $money = $v['second_price'] * $bottels;
+                                
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
+                                $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
+                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "下级业务员推销提成", $balance[0]);
+                            }
+                        }
+                    }
+                    
+                    #主管+总监
+                    if ($result['level3'] && $result['level4'] && !$result['level2']) {
+                        foreach ($sysconfig as $k=>$v) {
+                            if ($v['level'] == 3) {
+                                $re_uid = $result['level3'];
+                                $money = $v['direct_price'] * $bottels;
+                                
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
+                                $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
+                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "主管直推提成", $balance[0]);
+                            }
+                            if ($v['level'] == 4) {
+                                $re_uid = $result['level4'];
+                                $money = $v['third_price'] * $bottels;
+                                
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
+                                $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
+                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "下级主管推销提成", $balance[0]);
+                            }
+                        }
+                    }
+                    
+                    #业务员+主管+总监
+                    if ($result['level3'] && $result['level4'] && $result['level2']) {
+                        foreach ($sysconfig as $k=>$v) {
+                            if ($v['level'] == 2) {
+                                $re_uid = $result['level2'];
+                                $money = $v['direct_price'] * $bottels;
+                                
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
+                                $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
+                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "业务员直推提成", $balance[0]);
+                            }
+                            if ($v['level'] == 3) {
+                                $re_uid = $result['level3'];
+                                $money = $v['second_price'] * $bottels;
+                                
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
+                                $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
+                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "下级业务员推销提成", $balance[0]);
+                            }
+                            if ($v['level'] == 4) {
+                                $re_uid = $result['level4'];
+                                $money = $v['third_price'] * $bottels;
+                                
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
+                                $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
+                                $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
+                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "下级主管推销提成", $balance[0]);
+                            }
+                        }
+                    }
+                }
+            } else {
+                #上面3位老师分别奖励10元
+                $uids = $this->recurrence($uid);
+                if ($uids) {
+                    foreach ($uids as $k=>$v) {
+                        if ($k<=2) {
+                            $re_uid = $v;
+                            $money = 10;
+                            $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
+                            $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
+                            $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
+                            mz_flow($re_uid, $orderdetail['oid'], 3, $money, "复购奖励", $balance[0]);
+                        }
+                    }
+                }
+            }
+        }
     }
     
     #递归处理业绩
@@ -133,6 +330,14 @@ class System extends Common {
     public function dolevel($uid) {
         #系统配置参数
         $sysconfig = $this->sysconfig_model->order("level desc")->select();
+        
+        if (!$sysconfig) {
+            $sysconfig = array(
+                "0"=>["level"=>4,"directnums"=>30,"indirect_nums"=>100],
+                "1"=>["level"=>3,"directnums"=>15,"indirect_nums"=>50],
+                "2"=>["level"=>2,"directnums"=>0,"indirect_nums"=>0]
+            );
+        }
 
         $member_info = $this->mem_model->where("id='{$uid}'")->find();
         #已是最高等级
@@ -200,15 +405,83 @@ class System extends Common {
         return $result;
     }
     
-    #递归分佣链
-    public function recurrence_achieve($uid, &$result=array()) {
+    #递归求链
+    public function recurrence_2($uid, &$result=array()) {
         $uinfo = $this->membership_model->where("uid='{$uid}'")->find();
         if ($uinfo['parentid']) {
-            $result[] = $uinfo['parentid'];
-            $this->recurrence($uinfo['parentid'],$result);
+            $tmp = array();
+            $level = $this->mem_model->where("id='{$uinfo['parentid']}'")->column("level");
+            $tmp['uid'] = $uinfo['parentid'];
+            $tmp['level'] = $level[0];
+            $result[] = $tmp;
+            $this->recurrence_2($uinfo['parentid'],$result);
         }
         return $result;
     }
     
+    
+    #递归分佣链
+    public function recurrence_achieve($uid) {
+        $result = array();
+        $uinfo = $this->membership_model->where("uid='{$uid}'")->find();
+        #链条
+        $uids = $this->recurrence_2($uid);
+        if ($uinfo['parentid']) {
+            $lv = $this->mem_model->where("id='{$uinfo['parentid']}'")->column("level");
+            $level = $lv[0];
+            
+            if ($level == 4) {
+                #直接返回
+                $result['level4'] = $uinfo['parentid'];
+            } elseif ($level == 3) {
+                $result['level3'] = $uinfo['parentid'];
+                if ($uids) {
+                    unset($uids[0]);
+                    if (count($uids) > 0) {
+                        foreach ($uids as $k=>$v) {
+                            if ($v['level'] == 4) {
+                                $result['level4'] = $v['uid'];
+                                break;
+                            }
+                        }
+                    }
+                }
+            } elseif ($level == 2) {
+                $result['level2'] = $uinfo['parentid'];
+                if ($uids) {
+                    unset($uids[0]);
+                    if (count($uids) > 0) {
+                        foreach ($uids as $k=>$v) {
+                            if ($v['level'] == 4) {
+                                $result['level4'] = $v['uid'];
+                                break;
+                            } elseif ($v['level'] == 3) {
+                                $result['level3'] = $v['uid'];
+                                #继续找
+                                foreach ($uids as $k1=>$v1) {
+                                    if ($v1['level'] == 4) {
+                                        $result['level4'] = $v1['uid'];
+                                        break;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            return $result;
+        }
+    }
+    
+    
+    #测试清空
+    public function test() {
+        $flow = model("memberflow");
+        $flow->where("uid>0")->delete();
+        $this->mem_model->where("id>0")->update(["balance"=>0,"total_balance"=>0]);
+        $this->memberresult_model->where("uid>0")->delete();
+        echo "success";
+    }
     
 }

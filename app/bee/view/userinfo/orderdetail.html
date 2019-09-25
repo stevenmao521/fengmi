@@ -92,7 +92,7 @@
         </div>
         {/if}
         <div class="box">
-            <input type='button' value='确认收货' onclick="finish_order({$order_info.id});"/>
+            <input type='button' value='确认收货测试' onclick="finish_order({$order_info.id});"/>
         </div>
     </body>
     <script src="__STATIC__/bee/js/jquery.min.js"></script>
@@ -109,7 +109,7 @@
             data:{id:id},
             success:function(data){
                 if (data.code == 1) {
-                    location.reload();
+                    alert(data.msg);
                 } else {
                     alert(data.msg);
                 }

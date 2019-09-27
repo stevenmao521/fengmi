@@ -63,19 +63,7 @@ class System extends Common {
         $order_info = $this->order_model->where("id='{$id}'")->find();
         $order_detail = $this->orderdetail_model->where("oid='{$id}'")->select();
         
-        #更新用户等级
-        $member_info = $this->mem_model->where("id='{$uid}'")->find();
-        if ($member_info['level'] == 1) {
-            #进行升级，并记录日志
-            $ins_data = array();
-            $ins_data['uid'] = $uid;
-            $ins_data['direct_nums'] = 0;
-            $ins_data['indirect_nums'] = 0;
-            $ins_data['des'] = "达到 业务员 等级进行升级";
-            $ins_data['createtime'] = time();
-            $this->levellog_model->insert($ins_data);
-            $this->mem_model->where("id='{$uid}'")->update(array("level"=>2));
-        }
+        
         
         #业绩加成
         if ($order_detail) {

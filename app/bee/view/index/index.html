@@ -57,32 +57,26 @@
     </a>
     {/if}
 
+    
+    {if condition="$user.level gt 1"}
     <section class="category-wrap">
         <div class="home_sg">
             <p>VIP复购</p>
             <span class="tips">* 仅限VIP会员购买 *</span>
         </div>
-        <div class="home_fugou">
-            <li class="img"><span class="pic_tips">限复购用户</span><img src="__STATIC__/bee/img/pic01.jpg" /></li>
-            <li class="title">云南原始森林野生地下土酸蜂蜜</li>
-            <li class="jiage">¥ <span>398.00</span></li>
-        </div>
-        <div class="tips_x"></div>
-
-        <div class="home_fugou">
-            <li class="img"><span class="pic_tips">直升经理</span><img src="__STATIC__/bee/img/pic01.jpg" /></li>
-            <li class="title">云南原始森林野生地下土酸蜂蜜树酸蜂蜜（9盒）</li>
-            <li class="jiage">¥ <span>2322.00</span></li>
-        </div>
-        <div class="tips_x"></div>
-
-        <div class="home_fugou">
-            <li class="img"><span class="pic_tips">直升总监</span><img src="__STATIC__/bee/img/pic01.jpg" /></li>
-            <li class="title">云南原始森林野生地下土酸蜂蜜树酸蜂蜜（27盒）</li>
-            <li class="jiage">¥ <span>6966.00</span></li>
-        </div>
-        <div class="tips_x"></div>
+        
+        {volist name="slist" id="item"}
+        <a href="{:url('Mall/detail',array('id'=>$item['id']))}">
+            <div class="home_fugou">
+                <li class="img"><span class="pic_tips">{$item.tag_name}</span><img src="__PUBLIC__/{$item.pic}" /></li>
+                <li class="title">{$item.name}</li>
+                <li class="jiage">¥ <span>{$item.reprice}</span></li>
+            </div>
+            <div class="tips_x"></div>
+        </a>
+        {/volist}
     </section>
+    {/if}
 
     <div style="height:1.45rem"></div>
     {include file="common/foot"/}

@@ -27,6 +27,7 @@ class Mall extends Common {
     protected $order_detail_model;
     protected $address_model;
     protected $flow_model;
+    protected $levellog_model;
 
     public function _initialize() {
         parent::_initialize();
@@ -39,6 +40,7 @@ class Mall extends Common {
         $this->order_detail_model = model("Orderdetail");
         $this->address_model = model("Address");
         $this->flow_model = model("Memberflow");
+        $this->levellog_model = model("Levellog");
     }
 
     public function detail() {
@@ -96,7 +98,7 @@ class Mall extends Common {
         $uid = session("userid");
 
         $cart_list = $this->cart_model
-                        ->where("uid='{$uid}'")->order("createtime desc")->select();
+            ->where("uid='{$uid}'")->order("createtime desc")->select();
 
         if ($cart_list) {
             foreach ($cart_list as $k => $v) {
@@ -366,6 +368,19 @@ class Mall extends Common {
             $order_info = $this->order_model->where("id='{$id}'")->find();
             $member_info = $this->mem_model->where("id='{$uid}'")->find();
             mz_flow($uid, $id, 4, "-".$order_info['total_price'], "购买蜂蜜支出", $member_info['balance']);
+            
+            #更新用户等级
+            if ($member_info['level'] == 1) {
+                #进行升级，并记录日志
+                $ins_data = array();
+                $ins_data['uid'] = $uid;
+                $ins_data['direct_nums'] = 0;
+                $ins_data['indirect_nums'] = 0;
+                $ins_data['des'] = "达到 业务员 等级进行升级";
+                $ins_data['createtime'] = time();
+                $this->levellog_model->insert($ins_data);
+                $this->mem_model->where("id='{$uid}'")->update(array("level"=>2));
+            }
             
             return mz_apisuc("支付成功");
         } else {

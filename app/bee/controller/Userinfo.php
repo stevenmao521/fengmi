@@ -23,6 +23,7 @@ class Userinfo extends Common {
     protected $orderdetail_model;
     protected $product_model;
     protected $flow_model;
+    protected $cash_order;
 
     public function _initialize() {
         parent::_initialize();
@@ -34,6 +35,7 @@ class Userinfo extends Common {
         $this->orderdetail_model = model("Orderdetail");
         $this->product_model = model("Product");
         $this->flow_model = model("Memberflow");
+        $this->cash_order = model("Cashorder");
     }
     
     public function index() {
@@ -374,11 +376,58 @@ class Userinfo extends Common {
                 }
             }
         }
-        
         $this->assign("type", $type);
         $this->assign("userinfo", $userinfo);
         $this->assign("flow", $flow);
         return $this->fetch();
+    }
+    
+    #提现申请
+    public function getcash() {
+        $uid = session("userid");
+        return $this->fetch();
+    }
+    
+    #检测提现
+    public function checkcash() {
+        $uid = session("userid");
+        $money = input("money");
+        
+        $uinfo = $this->mem_model->where("id='{$uid}'")->find();
+        if (!$uinfo['realname'] || !$uinfo['bankcode'] || !$uinfo['bankname']) {
+            return mz_apierror("请到个人中心完善银行卡信息");
+        }
+        if (!preg_match("/^[1-9][0-9]*$/", $money)) {
+            return mz_apierror("金额输入不正确");
+        }
+        if ($money%100 != 0) {
+            return mz_apierror("取现金额只能是100的整数");
+        }
+        #用户余额
+        if ($uinfo['balance'] < $money) {
+            return mz_apierror("余额不足");
+        }
+        
+        #流水表
+        $after_money = $uinfo['balance'] - $money;
+        $this->mem_model->where("id='{$uid}'")->setDec("balance", $money);
+        mz_flow($uid, "", 2, "-".$money, "申请提现", $after_money);
+        
+        #提现申请表
+        $cash_data = array();
+        $cash_data['uid'] = $uid;
+        $cash_data['money'] = $money;
+        $cash_data['bankname'] = $uinfo['bankname'];
+        $cash_data['realname'] = $uinfo['realname'];
+        $cash_data['bankcode'] = $uinfo['bankcode'];
+        $cash_data['status'] = 1;
+        $cash_data['createtime'] = time();
+        $res = $this->cash_order->insert($cash_data);
+        if ($res) {
+            return mz_apisuc("提现申请成功");
+        } else {
+            return mz_apierror("提现申请失败");
+        }
     }
     
 }

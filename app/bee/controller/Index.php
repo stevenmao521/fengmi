@@ -37,12 +37,22 @@ class Index extends Common {
         $ads_news = $this->ads_model->where("type=2 and istrash=0")->select();
         
         #首购商品
-        $first_product = $this->product_model->where("tag=4 and istrash=0")->order("listorder asc")->find();
+        $first_product = $this->product_model->where("isnew=1 and istrash=0")->order("listorder asc")->find();
         $first_product['tag_name'] = mz_gettag($first_product['tag']);
         $first_product['pic'] = mz_pic($first_product['pics']);
         
+        #复购商品4件
+        $second_product = $this->product_model->where("isnew=2 and istrash=0")->limit(4)->order("listorder asc")->select();
+        if ($second_product) {
+            foreach ($second_product as $k=>$v) {
+                $second_product[$k]['tag_name'] = mz_gettag($v['tag']);
+                $second_product[$k]['pic'] = mz_pic($v['pics']);
+            }
+        }
+        
         $this->assign("user", $user);
         $this->assign("first", $first_product);
+        $this->assign("slist", $second_product);
         $this->assign("ads_lamp", $ads_lamp);
         $this->assign("ads_news", $ads_news);
         $this->assign("title", "蜂蜜商城");

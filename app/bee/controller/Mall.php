@@ -26,6 +26,7 @@ class Mall extends Common {
     protected $order_model;
     protected $order_detail_model;
     protected $address_model;
+    protected $flow_model;
 
     public function _initialize() {
         parent::_initialize();
@@ -37,6 +38,7 @@ class Mall extends Common {
         $this->order_model = model("Order");
         $this->order_detail_model = model("Orderdetail");
         $this->address_model = model("Address");
+        $this->flow_model = model("Memberflow");
     }
 
     public function detail() {
@@ -360,6 +362,11 @@ class Mall extends Common {
         $id = input("id");
         $res = $this->order_model->where("id='{$id}'")->update(array('haspay' => 1, 'paytime' => time(), "status" => 1));
         if ($res) {
+            #更新流水记录
+            $order_info = $this->order_model->where("id='{$id}'")->find();
+            $member_info = $this->mem_model->where("id='{$uid}'")->find();
+            mz_flow($uid, $id, 4, "-".$order_info['total_price'], "购买蜂蜜支出", $member_info['balance']);
+            
             return mz_apisuc("支付成功");
         } else {
             return mz_apierror("支付失败");

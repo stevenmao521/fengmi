@@ -22,6 +22,7 @@ class Userinfo extends Common {
     protected $order_model;
     protected $orderdetail_model;
     protected $product_model;
+    protected $flow_model;
 
     public function _initialize() {
         parent::_initialize();
@@ -32,6 +33,7 @@ class Userinfo extends Common {
         $this->order_model = model("Order");
         $this->orderdetail_model = model("Orderdetail");
         $this->product_model = model("Product");
+        $this->flow_model = model("Memberflow");
     }
     
     public function index() {
@@ -321,6 +323,13 @@ class Userinfo extends Common {
         $order_info['status'] = mz_getstatus($order_info['status']);
         $order_info['createtime'] = date("Y-m-d H:i:s", $order_info['createtime']);
         
+        #自动收获哦时间
+        $auto_time = $order_info['autotime'];
+        #减去当前时间
+        $left_time = $auto_time - time();
+        #天时分
+        $left_str = mz_time2string($left_time);
+        
         $order_detail = $this->orderdetail_model->where("oid='{$order_info['id']}'")->select();
         foreach ($order_detail as $k=>$v) {
             $product = $this->product_model->where("id='{$v['product_id']}'")->find();
@@ -328,9 +337,47 @@ class Userinfo extends Common {
             $order_detail[$k]['total_price'] = $v['price'] * $v['nums'];
         }
         
+        $this->assign("left_time", $left_str);
         $this->assign("status", $status);
         $this->assign("order_info", $order_info);
         $this->assign("order_detail", $order_detail);
+        return $this->fetch();
+    }
+    
+    #我的钱包
+    public function mywallet() {
+        $uid = session("userid");
+        $type = input("type") ? input("type") : 1;
+        
+        if ($type == 1) {
+            $where .= " type IN(1,3,4) ";
+        } elseif ($type == 2) {
+            $where .= " type=2 ";
+        }
+        $userinfo = $this->mem_model->where("id='{$uid}'")->find();
+        
+        #收支明细
+        $flow = $this->flow_model
+            ->where("uid='{$uid}'")
+            ->where($where)
+            ->order("createtime desc")
+            ->select();
+        if ($flow) {
+            foreach ($flow as $k=>$v) {
+                $flow[$k]['date'] = date("Y.m.d H:i", $v['createtime']);
+                if (substr($v['money'],0,1) == "-") {
+                    $flow[$k]['money'] = substr($v['money'], 1);
+                    $flow[$k]['moneytype'] = 1;
+                } else {
+                    $flow[$k]['money'] = substr($v['money'], 1);
+                    $flow[$k]['moneytype'] = 2;
+                }
+            }
+        }
+        
+        $this->assign("type", $type);
+        $this->assign("userinfo", $userinfo);
+        $this->assign("flow", $flow);
         return $this->fetch();
     }
     

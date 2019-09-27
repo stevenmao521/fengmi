@@ -46,6 +46,15 @@ class System extends Common {
         $uid = session("userid");
         $id = input("id");
         
+        #检查订单状态
+        $order_info = $this->order_model->where("id='{$id}'")->find();
+        if ($order_info['status'] == 4) {
+            return mz_apisuc("此订单已完成");
+        }
+        if ($order_info['uid'] != $uid) {
+            return mz_apisuc("参数错误");
+        }
+        
         #更新订单状态
         $this->order_model
             ->where("id='{$id}'")
@@ -84,6 +93,49 @@ class System extends Common {
         return mz_apisuc("订单完成成功");
     }
     
+    public function donetest() {
+        $uid = session("userid");
+        $id = input("id");
+        
+        #更新订单状态
+        $this->order_model
+            ->where("id='{$id}'")
+            ->update(array("status"=>4,"finishtime"=>time()));
+            
+        $order_info = $this->order_model->where("id='{$id}'")->find();
+        $order_detail = $this->orderdetail_model->where("oid='{$id}'")->select();
+        
+        #更新用户等级
+        $member_info = $this->mem_model->where("id='{$uid}'")->find();
+        if ($member_info['level'] == 1) {
+            #进行升级，并记录日志
+            $ins_data = array();
+            $ins_data['uid'] = $uid;
+            $ins_data['direct_nums'] = 0;
+            $ins_data['indirect_nums'] = 0;
+            $ins_data['des'] = "达到 业务员 等级进行升级";
+            $ins_data['createtime'] = time();
+            $this->levellog_model->insert($ins_data);
+            $this->mem_model->where("id='{$uid}'")->update(array("level"=>2));
+        }
+        
+        #业绩加成
+        if ($order_detail) {
+            foreach ($order_detail as $k=>$v) {
+                #瓶数
+                $bottles = $v['bottles'];
+                
+                #处理提成
+                $this->doachieve($uid, $v['isrebate'], $v);
+                
+                #处理业绩
+                $this->doresult($uid, $bottles);
+            }
+        }
+        return mz_apisuc("订单完成成功");
+    }
+    
+    
     #处理提成
     #isrebate 2：参与分佣
     public function doachieve($uid, $isrebate, $orderdetail) {
@@ -117,7 +169,7 @@ class System extends Common {
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
                                 $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
-                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "业务员直推提成", $balance[0]);
+                                mz_flow($re_uid, "+".$orderdetail['oid'], 1, $money, "业务员直推提成", $balance[0]);
                             }
                         }
                     }
@@ -132,7 +184,7 @@ class System extends Common {
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
                                 $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
-                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "销售主管直推提成", $balance[0]);
+                                mz_flow($re_uid, "+".$orderdetail['oid'], 1, $money, "销售主管直推提成", $balance[0]);
                             }
                         }
                     }
@@ -147,13 +199,13 @@ class System extends Common {
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
                                 $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
-                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "销售总监直推提成", $balance[0]);
+                                mz_flow($re_uid, "+".$orderdetail['oid'], 1, $money, "销售总监直推提成", $balance[0]);
                             }
                         }
                     }
                     
                     #业务员+主管
-                    if ($result['level2'] && !$result['level3'] && !$result['level4']) {
+                    if ($result['level2'] && $result['level3'] && !$result['level4']) {
                         foreach ($sysconfig as $k=>$v) {
                             if ($v['level'] == 2) {
                                 $re_uid = $result['level2'];
@@ -162,7 +214,7 @@ class System extends Common {
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
                                 $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
-                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "业务员直推提成", $balance[0]);
+                                mz_flow($re_uid, "+".$orderdetail['oid'], 1, $money, "业务员直推提成", $balance[0]);
                             }
                             if ($v['level'] == 3) {
                                 $re_uid = $result['level3'];
@@ -171,7 +223,7 @@ class System extends Common {
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
                                 $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
-                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "下级业务员推销提成", $balance[0]);
+                                mz_flow($re_uid, "+".$orderdetail['oid'], 1, $money, "下级业务员推销提成", $balance[0]);
                             }
                         }
                     }
@@ -186,7 +238,7 @@ class System extends Common {
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
                                 $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
-                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "业务员直推提成", $balance[0]);
+                                mz_flow($re_uid, "+".$orderdetail['oid'], 1, $money, "业务员直推提成", $balance[0]);
                             }
                             if ($v['level'] == 4) {
                                 $re_uid = $result['level4'];
@@ -195,7 +247,7 @@ class System extends Common {
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
                                 $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
-                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "下级业务员推销提成", $balance[0]);
+                                mz_flow($re_uid, "+".$orderdetail['oid'], 1, $money, "下级业务员推销提成", $balance[0]);
                             }
                         }
                     }
@@ -210,7 +262,7 @@ class System extends Common {
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
                                 $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
-                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "主管直推提成", $balance[0]);
+                                mz_flow($re_uid, "+".$orderdetail['oid'], 1, $money, "主管直推提成", $balance[0]);
                             }
                             if ($v['level'] == 4) {
                                 $re_uid = $result['level4'];
@@ -219,7 +271,7 @@ class System extends Common {
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
                                 $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
-                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "下级主管推销提成", $balance[0]);
+                                mz_flow($re_uid, "+".$orderdetail['oid'], 1, $money, "下级主管推销提成", $balance[0]);
                             }
                         }
                     }
@@ -234,7 +286,7 @@ class System extends Common {
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
                                 $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
-                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "业务员直推提成", $balance[0]);
+                                mz_flow($re_uid, "+".$orderdetail['oid'], 1, $money, "业务员直推提成", $balance[0]);
                             }
                             if ($v['level'] == 3) {
                                 $re_uid = $result['level3'];
@@ -243,7 +295,7 @@ class System extends Common {
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
                                 $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
-                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "下级业务员推销提成", $balance[0]);
+                                mz_flow($re_uid, "+".$orderdetail['oid'], 1, $money, "下级业务员推销提成", $balance[0]);
                             }
                             if ($v['level'] == 4) {
                                 $re_uid = $result['level4'];
@@ -252,7 +304,7 @@ class System extends Common {
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
                                 $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
                                 $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
-                                mz_flow($re_uid, $orderdetail['oid'], 1, $money, "下级主管推销提成", $balance[0]);
+                                mz_flow($re_uid, "+".$orderdetail['oid'], 1, $money, "下级主管推销提成", $balance[0]);
                             }
                         }
                     }
@@ -268,7 +320,7 @@ class System extends Common {
                             $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
                             $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
                             $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
-                            mz_flow($re_uid, $orderdetail['oid'], 3, $money, "复购奖励", $balance[0]);
+                            mz_flow($re_uid, "+".$orderdetail['oid'], 3, $money, "复购奖励", $balance[0]);
                         }
                     }
                 }
@@ -477,11 +529,19 @@ class System extends Common {
     
     #测试清空
     public function test() {
+        $uid = session("userid");
         $flow = model("memberflow");
         $flow->where("uid>0")->delete();
-        $this->mem_model->where("id>0")->update(["balance"=>0,"total_balance"=>0]);
+        #余额清0 等级业务员
+        $this->mem_model->where("id>0")->update(["balance"=>0,"total_balance"=>0,"level"=>2]);
         $this->memberresult_model->where("uid>0")->delete();
-        echo "success";
+        
+        #当前用户等级1
+        $this->mem_model->where("id='{$uid}'")->update(["level"=>1]);
+        
+        #升级日志
+        $levellog = $this->levellog_model->where("uid>0")->delete();
+        return mz_apierror("清空测试成功");
     }
     
 }

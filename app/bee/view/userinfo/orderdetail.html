@@ -10,7 +10,10 @@
         <meta name="format-detection" content="telephone=no">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <title>订单详细</title>
-        <link href="__STATIC__/bee/css/order.css" rel="stylesheet" />
+        <link href="__STATIC__/bee/css/main.css?v1" rel="stylesheet" />
+        <link href="__STATIC__/bee/css/index.css?v1" rel="stylesheet" />
+	<link href="__STATIC__/bee/css/zl.css?v1" rel="stylesheet" />
+	<link href="__STATIC__/bee/css/order.css" rel="stylesheet" />
         <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
         <script src="__STATIC__/bee/js/tool/swiper-4.4.1.min.js"></script>
         <script src="__STATIC__/bee/js/main.js"></script>
@@ -87,12 +90,25 @@
         </div>
         
         {if condition="$status eq 3"}
-        <div class="box">
-            <input type='button' value='确认收货' onclick="finish_order({$order_info.id});"/>
+        <div class="page-foot-btn-box ">
+            <div class="page-foot-btn dianbo">
+                <p class="price"><span class="adorn">{$left_time}后自动收获</span></p>
+                <a class="buy" href="cart_buy.html">确认收货</a>
+            </div>
         </div>
         {/if}
-        <div class="box">
-            <input type='button' value='确认收货测试' onclick="finish_order({$order_info.id});"/>
+        
+        <div>
+            测试区域
+            <input type="button" value="清空测试" class="btn" onclick="test();"/>
+            <input type="button" value="确认收获" class="btn" onclick="finish_order_test({$order_info.id});"/>
+        </div>
+        
+        <div class="page-foot-btn-box ">
+            <div class="page-foot-btn dianbo">
+                <p class="price"><span class="adorn">{$left_time}后自动收获</span></p>
+                <a class="buy" href="javascript:;" onclick="finish_order({$order_info.id});">确认收货</a>
+            </div>
         </div>
     </body>
     <script src="__STATIC__/bee/js/jquery.min.js"></script>
@@ -117,4 +133,36 @@
         });
     }
     
+    //测试
+    function finish_order_test(id) {
+        $.ajax({
+            url:"{:url('System/donetest')}",
+            type:'post',
+            dataType:'json',
+            data:{id:id},
+            success:function(data){
+                if (data.code == 1) {
+                    alert(data.msg);
+                } else {
+                    alert(data.msg);
+                }
+            }
+        });
+    }
+    
+    //清空测试
+    function test() {
+        $.ajax({
+            url:"{:url('System/test')}",
+            type:'post',
+            dataType:'json',
+            success:function(data){
+                if (data.code == 1) {
+                    alert(data.msg);
+                } else {
+                    alert(data.msg);
+                }
+            }
+        });
+    }
 </script>

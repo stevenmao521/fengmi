@@ -28,6 +28,7 @@ class Mall extends Common {
     protected $address_model;
     protected $flow_model;
     protected $levellog_model;
+    protected $productcate_model;
 
     public function _initialize() {
         parent::_initialize();
@@ -41,6 +42,34 @@ class Mall extends Common {
         $this->address_model = model("Address");
         $this->flow_model = model("Memberflow");
         $this->levellog_model = model("Levellog");
+        $this->productcate_model = model("Productcate");
+    }
+    
+    #列表
+    public function lists() {
+        $uid = session("userid");
+        $cid = input("cid") ? input("cid") : 1;
+        
+        $where = " cid = '{$cid}'";
+        
+        $catelist = $this->productcate_model->where("istrash=0")->order("listorder asc")->select();
+        $product_list = $this->product_model
+            ->where("isnew=2 and istrash=0")
+            ->where($where)
+            ->limit(20)->order("listorder asc")
+            ->select();
+        
+        if ($product_list) {
+            foreach ($product_list as $k=>$v) {
+                $product_list[$k]['tag_name'] = mz_gettag($v['tag']);
+                $product_list[$k]['pic'] = mz_pic($v['pics']);
+            }
+        }
+        
+        $this->assign("catelist", $catelist);
+        $this->assign("list", $product_list);
+        $this->assign("cid", $cid);
+        return $this->fetch();
     }
 
     public function detail() {

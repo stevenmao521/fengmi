@@ -60,11 +60,12 @@
     
     {if condition="$user.level gt 1"}
     <section class="category-wrap">
+        <a href="{:url('Mall/lists')}">
         <div class="home_sg">
             <p>VIP复购</p>
             <span class="tips">* 仅限VIP会员购买 *</span>
         </div>
-        
+        </a>
         {volist name="slist" id="item"}
         <a href="{:url('Mall/detail',array('id'=>$item['id']))}">
             <div class="home_fugou">

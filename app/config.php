@@ -252,9 +252,9 @@ return [
             'last_page'=>true  //尾页
         ]
     ],
-    'pageSize'=>10,
+    'pageSize'=>20,
     //自定义配置
-    'sys_name' =>'m',
+    'sys_name' =>'蜜蜂商城',
     //文件上传
     'addwater'=>false,
     'watertext'=>'CLTPHP',

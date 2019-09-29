@@ -47,4 +47,41 @@ class Order extends Common{
         $this->assign('modname', $this->modname);
     }
     
+    #领用列表
+    public function orderdetail(){
+        if(request()->isPost()){
+            #筛选字段
+            $post = input("request.");
+            $parentid = $post['id'];
+            #列表
+            $page =input('page')?input('page'):1;
+            $pageSize =input('limit')?input('limit'):config('pageSize');
+            $list = db("orderdetail")
+                ->where("istrash=0 and pid='{$parentid}'")
+                ->order('updatetime desc')
+                ->paginate(array('list_rows'=>$pageSize,'page'=>$page))
+                ->toArray();
+            
+            $list['data'] = mz_formattime($list['data'], 'updatetime', 1);
+            #时间转换
+            $lfields = $this->lfields;
+            if ($lfields) {
+                foreach ($lfields as $k=>$v) {
+                    if ($v['type'] == 'datetime') {
+                        $list['data'] = mz_formattime($list['data'], $v['field'], 2);
+                    }
+                }
+            }
+            return $result = ['code'=>0,'msg'=>'获取成功!','data'=>$list['data'],'count'=>$list['total'],'rel'=>1];
+        }
+        #列表字段
+        $this->moduleid = 15;
+        $list_str = $this->helper->getlistField($this->moduleid);
+        #模版渲染
+        return $this->fetch('',[
+            'js_str' => $list_str['js_str'],
+            'js_tmp' => $list_str['js_tmp'],
+        ]);
+    }
+    
 }

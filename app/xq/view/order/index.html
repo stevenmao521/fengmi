@@ -44,9 +44,33 @@
     {if $olist}
     <a class="layui-btn layui-btn-mini" lay-event="olist" >清单列表</a>
     {/if}
-    <a href="{:url('edit')}?id={{d.id}}" class="layui-btn layui-btn-mini">{:lang('edit')}</a>
+    <a href="{:url('edit')}?id={{d.id}}" class="layui-btn layui-btn-warm layui-btn-mini">订单商品</a>
+    <a href="{:url('edit')}?id={{d.id}}" class="layui-btn layui-btn-mini">详细</a>
     <a class="layui-btn layui-btn-danger layui-btn-mini" lay-event="del">{:lang('del')}</a>
 </script>
+
+<script type="text/html" id="haspay_evt">
+    {{# if(d.haspay==0){ }}
+    <span style="color:red;">未付款</span>
+    {{# }else if(d.haspay == 1){  }}
+    <span style="color:green;">已付款</span>
+    {{# } }}
+</script>
+
+<script type="text/html" id="status_evt">
+    {{# if(d.status==0){ }}
+    <span>未完成</span>
+    {{# }else if(d.status == 1){  }}
+    <span style="color:#00b4f8;">待发货</span>
+    {{# }else if(d.status == 2){  }}
+    <span style="color:#666;">已失效</span>
+    {{# }else if(d.status == 3){  }}
+    <span style="color:orange;">已发货</span>
+    {{# }else if(d.status == 4){  }}
+    <span style="color:green;">已完成</span>
+    {{# } }}
+</script>
+
 <!--字段js模版-->
 {$js_tmp}
 
@@ -68,13 +92,13 @@
                 {checkbox:true,fixed: true},
                 //服务端赋值字段
                 {$js_str}
-                {width: 180, align: 'center', toolbar: '#action',fixed:'right'}
+                {width: 220, align: 'center', toolbar: '#action',fixed:'right'}
             ]
             ],
             done: function(res, curr, count){
                 {$count_js}
             },
-            limit: 10 //每页默认显示的数量
+            limit: 15 //每页默认显示的数量
             ,size: 'sm' //小尺寸的表格
         });
         

@@ -78,6 +78,71 @@ class Userinfo extends Common {
         return $this->fetch();
     }
     
+    #修改昵称
+    public function changebankname() {
+        $uid = session("userid");
+        $ispost = input("ispost");
+        $nickname = input("nickname");
+        
+        $mem_info = $this->mem_model->where("id='{$uid}'")->find();
+        if ($ispost) {
+            $res = $this->mem_model->where("id='{$uid}'")->update(['bankname'=>$nickname]);
+            if ($res) {
+                return mz_apisuc("修改成功");
+            } else {
+                return mz_apierror("修改失败");
+            }
+        }
+        
+        $this->assign("info", $mem_info);
+        $this->assign("title", "修改开户行");
+        return $this->fetch();
+    }
+    
+    #修改昵称
+    public function changerealname() {
+        $uid = session("userid");
+        $ispost = input("ispost");
+        $nickname = input("nickname");
+        
+        $mem_info = $this->mem_model->where("id='{$uid}'")->find();
+        if ($ispost) {
+            $res = $this->mem_model->where("id='{$uid}'")->update(['realname'=>$nickname]);
+            if ($res) {
+                return mz_apisuc("修改成功");
+            } else {
+                return mz_apierror("修改失败");
+            }
+        }
+        
+        $this->assign("info", $mem_info);
+        $this->assign("title", "修改开户姓名");
+        return $this->fetch();
+    }
+    
+    #修改昵称
+    public function changebankcode() {
+        $uid = session("userid");
+        $ispost = input("ispost");
+        $nickname = input("nickname");
+        
+        $mem_info = $this->mem_model->where("id='{$uid}'")->find();
+        if ($ispost) {
+            $res = $this->mem_model->where("id='{$uid}'")->update(['bankcode'=>$nickname]);
+            if ($res) {
+                return mz_apisuc("修改成功");
+            } else {
+                return mz_apierror("修改失败");
+            }
+        }
+        
+        $this->assign("info", $mem_info);
+        $this->assign("title", "修改银行卡号");
+        return $this->fetch();
+    }
+    
+    
+    
     #我的推广
     public function myshare() {
         $uid = session("userid");

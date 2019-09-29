@@ -64,7 +64,7 @@ class Common extends Controller
             $list = $this->dao
                     ->where($sel_map)
                     ->where("istrash=0")
-                    ->order('id asc')
+                    ->order('id desc')
                     ->paginate(array('list_rows' => $pageSize, 'page' => $page))
                     ->toArray();
 

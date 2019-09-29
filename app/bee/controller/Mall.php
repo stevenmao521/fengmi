@@ -398,6 +398,12 @@ class Mall extends Common {
             $member_info = $this->mem_model->where("id='{$uid}'")->find();
             mz_flow($uid, $id, 4, "-".$order_info['total_price'], "购买蜂蜜支出", $member_info['balance']);
             
+            #增加商品销量
+            $order_detail = $this->order_detail_model->where("oid='{$order_info['id']}'")->select();
+            foreach ($order_detail as $k=>$v) {
+                $this->product_model->where("id='{$v['product_id']}'")->setInc("selnums", $v['nums']);
+            }
+            
             #更新用户等级
             if ($member_info['level'] == 1) {
                 #进行升级，并记录日志

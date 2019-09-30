@@ -49,39 +49,63 @@ class Order extends Common{
     
     #领用列表
     public function orderdetail(){
-        if(request()->isPost()){
-            #筛选字段
-            $post = input("request.");
-            $parentid = $post['id'];
-            #列表
-            $page =input('page')?input('page'):1;
-            $pageSize =input('limit')?input('limit'):config('pageSize');
-            $list = db("orderdetail")
-                ->where("istrash=0 and pid='{$parentid}'")
-                ->order('updatetime desc')
-                ->paginate(array('list_rows'=>$pageSize,'page'=>$page))
-                ->toArray();
-            
-            $list['data'] = mz_formattime($list['data'], 'updatetime', 1);
-            #时间转换
-            $lfields = $this->lfields;
-            if ($lfields) {
-                foreach ($lfields as $k=>$v) {
-                    if ($v['type'] == 'datetime') {
-                        $list['data'] = mz_formattime($list['data'], $v['field'], 2);
-                    }
+        #筛选字段
+        $post = input("request.");
+        $parentid = $post['id'];
+        #列表
+        $page =input('page')?input('page'):1;
+        $pageSize =input('limit')?input('limit'):config('pageSize');
+        $list = db("orderdetail")
+            ->where("istrash=0 and oid='{$parentid}'")
+            ->order('id desc')
+            ->paginate(array('list_rows'=>$pageSize,'page'=>$page))
+            ->toArray();
+
+        #时间转换
+        $lfields = $this->lfields;
+        if ($lfields) {
+            foreach ($lfields as $k=>$v) {
+                if ($v['type'] == 'datetime') {
+                    $list['data'] = mz_formattime($list['data'], $v['field'], 2);
                 }
             }
-            return $result = ['code'=>0,'msg'=>'获取成功!','data'=>$list['data'],'count'=>$list['total'],'rel'=>1];
         }
-        #列表字段
-        $this->moduleid = 15;
-        $list_str = $this->helper->getlistField($this->moduleid);
-        #模版渲染
-        return $this->fetch('',[
-            'js_str' => $list_str['js_str'],
-            'js_tmp' => $list_str['js_tmp'],
-        ]);
+        $this->assign("list", $list);
+        return $this->fetch();
+    }
+    
+    #发货
+    public function isSend() {
+        $map['id'] = input('post.id');
+        #判断当前状态情况
+        $info = $this->dao->where($map)->find();
+        
+        if ($info['haspay'] != 1) {
+            return ['code'=>0,'msg'=>'此订单还未付款，不能发货！'];
+        } else {
+            if (!$info['express'] || !$info['expresscode']) {
+                return ['code'=>0,'msg'=>'请再详情里编辑快递信息再发货'];
+            }
+        }
+        
+        if ($info['status'] != 4) {
+            $data['issend'] = 2;
+            $data['status'] = 3;
+            $data['sendtime'] = time();
+            #自动收货时间
+            $data['autotime'] = time() + 3600*24*5;
+            
+            $r = $this->dao->where($map)->setField($data);
+            if ($r) {
+                #日志
+                $this->helper->insLog($this->moduleid, 'issend', session('aid'), session('username'), $map['id']);
+                return ['code'=>1,'msg'=>'成功！'];
+            } else {
+                return ['code'=>0,'msg'=>'失败！'];
+            }
+        } else {
+            return ['code'=>0,'msg'=>'此订单已完成'];
+        }
     }
     
 }

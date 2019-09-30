@@ -1,0 +1,48 @@
+{include file="common/head"/}
+<div class="admin-main layui-anim layui-anim-upbit">
+    <div class="layui-tab layui-tab-brief" lay-filter="docDemoTabBrief">
+        <ul class="layui-tab-title">
+            <li class=""><a href="{:url('order/index')}">订单列表</a></li>
+            <li class="layui-this"><a href="javascript:;">商品列表</a></li>
+        </ul>
+    </div>
+    <table class="layui-table" id="list" lay-filter="list">
+        <tr>
+            <th>商品名称</th>
+            <th>单价</th>
+            <th>数量</th>
+            <th>是否参与返佣</th>
+            <th>总瓶数</th>
+            <th>限制类型</th>
+        </tr>
+        {volist name='list.data' id='item'}
+        <tr>
+            <td>{$item['product_name']}</td>
+            <td>{$item.price}</td>
+            <td>{$item.nums}</td>
+            <td>
+                {if condition="$item.isrebate eq 1"}
+                不参与
+                {else/}
+                参与
+                {/if}
+            </td>
+            <td>{$item.bottles}</td>
+            <td>
+                {if condition="$item.isnew eq 1"}
+                限新用户
+                {else/}
+                限复购
+                {/if}
+            </td>
+        </tr>
+        {/volist}
+    </table>
+</div>
+
+{include file="common/foot"/}
+<script>
+    
+</script>
+</body>
+</html>

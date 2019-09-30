@@ -63,8 +63,6 @@ class System extends Common {
         $order_info = $this->order_model->where("id='{$id}'")->find();
         $order_detail = $this->orderdetail_model->where("oid='{$id}'")->select();
         
-        
-        
         #业绩加成
         if ($order_detail) {
             foreach ($order_detail as $k=>$v) {

@@ -44,7 +44,7 @@
     {if $olist}
     <a class="layui-btn layui-btn-mini" lay-event="olist" >清单列表</a>
     {/if}
-    <a href="{:url('edit')}?id={{d.id}}" class="layui-btn layui-btn-warm layui-btn-mini">订单商品</a>
+    <a href="{:url('orderdetail')}?id={{d.id}}" class="layui-btn layui-btn-warm layui-btn-mini">订单商品</a>
     <a href="{:url('edit')}?id={{d.id}}" class="layui-btn layui-btn-mini">详细</a>
     <a class="layui-btn layui-btn-danger layui-btn-mini" lay-event="del">{:lang('del')}</a>
 </script>
@@ -71,6 +71,14 @@
     {{# } }}
 </script>
 
+<script type="text/html" id="issend_evt">
+    {{# if(d.issend==1){ }}
+    <a class="layui-btn layui-btn-mini layui-bg-blue" lay-event="issend">未发货</a>
+    {{# }else{  }}
+    <a class="layui-btn layui-btn-mini layui-btn-disabled" >已发货</a>
+    {{# } }}
+</script>
+
 <!--字段js模版-->
 {$js_tmp}
 
@@ -92,6 +100,7 @@
                 {checkbox:true,fixed: true},
                 //服务端赋值字段
                 {$js_str}
+                {field: 'issend', title: '订单发货', width: 100 , toolbar: '#issend_evt',fixed:'right'},
                 {width: 220, align: 'center', toolbar: '#action',fixed:'right'}
             ]
             ],
@@ -140,6 +149,20 @@
                             tableIn.reload();
                         }else{
                             layer.msg('操作失败！',{time:1000,icon:2});
+                        }
+                    });
+                    layer.close(index);
+                });
+            } else if (obj.event === 'issend') {
+                layer.confirm('您确定要发货吗？', function(index){
+                    var loading = layer.load(1, {shade: [0.1, '#fff']});
+                    $.post("{:url('isSend')}",{id:data.id},function(res){
+                        layer.close(loading);
+                        if(res.code===1){
+                            layer.msg(res.msg,{time:1000,icon:1});
+                            tableIn.reload();
+                        }else{
+                            layer.msg(res.msg,{time:1000,icon:2});
                         }
                     });
                     layer.close(index);

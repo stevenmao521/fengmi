@@ -4,12 +4,15 @@
         <ul class="layui-tab-title">
             <li class="layui-this"><a href='{:url("index")}'>{:lang('list')}</a></li>
             <li><a href='{:url("log")}'>{:lang('loglist')}</a></li>
+            <!--
             <li><a href='{:url("trash")}'>{:lang('trash')}</a></li>
+            -->
         </ul>
     </div>
     
     <!-- 筛选列表 -->
     <div class="demoTable layui-form">
+        <!--
         <div class="layui-form-item" id="search_box" >
             {$html_str}
         </div>
@@ -20,6 +23,7 @@
             <button class="layui-btn layui-btn-small" id="search" data-type="reload" style="float:right;">{:lang('search')}</button>
             <a href="{:url('index')}" class="layui-btn layui-btn-small" style="float:right;">{:lang('clear')}</a>
         </blockquote>
+        -->
     </div>
     {if condition='$count_html1'}
         <table class="layui-table" lay-size="sm">
@@ -45,7 +49,9 @@
     <a class="layui-btn layui-btn-mini" lay-event="olist" >清单列表</a>
     {/if}
     <a href="{:url('edit')}?id={{d.id}}" class="layui-btn layui-btn-mini">{:lang('edit')}</a>
+    <!--
     <a class="layui-btn layui-btn-danger layui-btn-mini" lay-event="del">{:lang('del')}</a>
+    -->
 </script>
 <!--字段js模版-->
 {$js_tmp}

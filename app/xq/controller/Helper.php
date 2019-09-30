@@ -423,6 +423,12 @@ class Helper extends Common{
             case 'rush':
                 $act = '彻底删除';
                 break;
+            case 'issend':
+                $act = '发货';
+                break;
+            case 'iscahs':
+                $act = '审核打款';
+                break;
         }
         $remark = $act.$module['title'].'编号：'.$ids;
         $ins_data = array();

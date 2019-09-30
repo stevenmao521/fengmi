@@ -49,6 +49,17 @@
     <a href="{:url('edit')}?id={{d.id}}" class="layui-btn layui-btn-mini">{:lang('edit')}</a>
     <a class="layui-btn layui-btn-danger layui-btn-mini" lay-event="del">{:lang('del')}</a>
 </script>
+
+<script type="text/html" id="success_evt">
+    {{# if(d.status==1){ }}
+    <a class="layui-btn layui-btn-mini layui-bg-blue" lay-event="getcash">确认打款</a>
+    {{# }else if(d.status==2){  }}
+    <a class="layui-btn layui-btn-mini layui-btn-disabled" >已到账</a>
+    {{# }else{  }}
+    <a class="layui-btn layui-btn-mini layui-btn-danger" >已拒绝</a>
+    {{# } }}
+</script>
+
 <!--字段js模版-->
 {$js_tmp}
 
@@ -70,6 +81,7 @@
                 {checkbox:true,fixed: true},
                 //服务端赋值字段
                 {$js_str}
+                {field: 'status', title: '确认打款', width: 100 , toolbar: '#success_evt',fixed:'right'},
                 {width: 180, align: 'center', toolbar: '#action',fixed:'right'}
             ]
             ],
@@ -118,6 +130,20 @@
                             tableIn.reload();
                         }else{
                             layer.msg('操作失败！',{time:1000,icon:2});
+                        }
+                    });
+                    layer.close(index);
+                });
+            } else if (obj.event === 'getcash') {
+                layer.confirm('确定已打款？', function(index){
+                    var loading = layer.load(1, {shade: [0.1, '#fff']});
+                    $.post("{:url('isCash')}",{id:data.id},function(res){
+                        layer.close(loading);
+                        if(res.code===1){
+                            layer.msg(res.msg,{time:1000,icon:1});
+                            tableIn.reload();
+                        }else{
+                            layer.msg(res.msg,{time:1000,icon:2});
                         }
                     });
                     layer.close(index);

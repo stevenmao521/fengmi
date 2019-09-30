@@ -47,4 +47,25 @@ class Cashorder extends Common{
         $this->assign('modname', $this->modname);
     }
     
+    #打款
+    public function isCash() {
+        $map['id'] = input('post.id');
+        #判断当前状态情况
+        $info = $this->dao->where($map)->find();
+        
+        $data['status'] = 2;
+        $data['dotime'] = time();
+        $r = $this->dao->where($map)->setField($data);
+        
+        if ($r) {
+            #10位老师提现1%
+            #日志
+            $this->helper->insLog($this->moduleid, 'iscash', session('aid'), session('username'), $map['id']);
+            return ['code'=>1,'msg'=>'成功！'];
+        } else {
+            return ['code'=>0,'msg'=>'失败！'];
+        }
+        
+    }
+    
 }

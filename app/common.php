@@ -1150,7 +1150,7 @@ function mz_getstatus($status) {
 
 #流水记录
 function mz_flow($uid, $oid="", $type, $money, $des, $balance) {
-    $memberflow_model = model("Memberflow");
+    $memberflow_model = db("Memberflow");
     
     $memberflow_model->insert(array(
         "uid"=>$uid,

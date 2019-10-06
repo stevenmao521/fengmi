@@ -30,7 +30,11 @@ class Index extends Common {
     public function index() {
         $uid = session("userid");
         
-        $user = $this->mem_model->where("id='{$uid}'")->find();
+        if ($uid) {
+            $user = $this->mem_model->where("id='{$uid}'")->find();
+        } else {
+            $user = array();
+        }
         
         #首页幻灯
         $ads_lamp = $this->ads_model->where("type=1 and istrash=0")->select();

@@ -55,10 +55,39 @@
         </div>
     </section>
     </a>
-    {/if}
-
-    
-    {if condition="$user.level gt 1"}
+    {elseif condition="$user.level gt 1"}
+    <section class="category-wrap">
+        <a href="{:url('Mall/lists')}">
+        <div class="home_sg">
+            <p>VIP复购</p>
+            <span class="tips">* 仅限VIP会员购买 *</span>
+        </div>
+        </a>
+        {volist name="slist" id="item"}
+        <a href="{:url('Mall/detail',array('id'=>$item['id']))}">
+            <div class="home_fugou">
+                <li class="img"><span class="pic_tips">{$item.tag_name}</span><img src="__PUBLIC__/{$item.pic}" /></li>
+                <li class="title">{$item.name}</li>
+                <li class="jiage">¥ <span>{$item.reprice}</span></li>
+            </div>
+            <div class="tips_x"></div>
+        </a>
+        {/volist}
+    </section>
+    {else/}
+    <a href="{:url('Mall/detail',array('id'=>$first['id']))}">
+    <section class="category-wrap">
+        <div class="home_sg">
+            <p>首购有礼</p>
+            <span class="tips">* 仅限新会员购买 *</span>
+        </div>
+        <div class="home_sgsp">
+            <li><span class="pic_tips">{$first.tag_name}</span><img src="__PUBLIC__/{$first.pic}" /></li>
+            <li class="title">{$first.name}</li>
+            <li class="jiage">¥ <span>{$first.price}</span><span class="fr tips">{$first.selnums}人已购买</span></li>
+        </div>
+    </section>
+    </a>
     <section class="category-wrap">
         <a href="{:url('Mall/lists')}">
         <div class="home_sg">

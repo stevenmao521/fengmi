@@ -26,6 +26,10 @@ class Userinfo extends Common {
     protected $cash_order;
 
     public function _initialize() {
+        
+        #检查登陆
+        $this->checklogin();
+        
         parent::_initialize();
         $this->assign("title", "个人中心");
         $this->helper = new HelperDao();

@@ -40,6 +40,9 @@ class System extends Common {
         $this->membership_model = model("Membership");
         $this->sysconfig_model = model("Sysconfig");
         $this->levellog_model = model("Levellog");
+        
+        #检查登陆
+        $this->checklogin();
     }
     
     public function done() {

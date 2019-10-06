@@ -258,5 +258,6 @@ return [
     //文件上传
     'addwater'=>false,
     'watertext'=>'CLTPHP',
-    'version'=>'5.2'
+    'version'=>'5.2',
+    'host'=>'www.fengmi.com',
 ];

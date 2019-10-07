@@ -22,8 +22,45 @@ class Passport extends Common {
 
     public function _initialize() {
         parent::_initialize();
+        
         $this->helper = new HelperDao();
         $this->mem_model = model("Members");
+    }
+    
+    #来自分享
+    public function share() {
+        $id = input("id");
+        $uid = session("userid");
+        $parent = $this->mem_model->where("serviceid='{$id}'")->find();
+        
+        if (!$parent['serviceid']) {
+            $this->redirect("bee/Index/index");
+        }
+        
+        if ($uid) {
+            $user = $this->mem_model->where("id='{$uid}'")->find();
+            if (!$user) {
+                session("userid",null);
+            } else {
+                $this->redirect("bee/Index/index");
+            }
+        }
+        
+        $serviceid = $parent['serviceid'];
+        
+        $wx_info = db("wx_user")->find();
+        $appid = $wx_info['appid'];
+        //微信网页授权
+        #回调页面 绑定页面
+        $host = Config::get('host');
+        #未绑定手机跳转手机绑定页面
+        #$jump = $_SERVER['REQUEST_URI'];
+        $bind = "bee-Passport-index";
+        $redirect_uri = urlencode('http://'.$host."/".$bind);
+
+        $url ="https://open.weixin.qq.com/connect/oauth2/authorize?appid=$appid&redirect_uri=$redirect_uri&response_type=code&scope=snsapi_userinfo&state={$serviceid}&connect_redirect=1#wechat_redirect";
+        header("Location:".$url);
+        exit;
     }
     
     
@@ -36,10 +73,16 @@ class Passport extends Common {
         $appid = $wx_info['appid'];
         $secret = $wx_info['appsecret'];
         
+        
+        #echo $code;
+        #db("smscode")->insert(array('type'=>2,'mobile'=>13452415831,'code'=>$code));
+        #exit;
+        
         //第一步:取得openid
         $oauth2Url = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=$appid&secret=$secret&code=$code&grant_type=authorization_code";
         $oauth2 = $this->getJson($oauth2Url);
-
+        
+        
         //第二步:根据全局access_token和openid查询用户信息
         $access_token = $oauth2["access_token"];
         $openid = $oauth2['openid'];
@@ -47,6 +90,7 @@ class Passport extends Common {
         $userinfo = $this->getJson($get_user_info_url);
         
         if($userinfo['openid']){
+            
             $openid = $userinfo['openid'];
             $nickname = $userinfo['nickname'];
             $headimg = $userinfo['headimgurl'];
@@ -55,6 +99,7 @@ class Passport extends Common {
             $hasuser = $this->mem_model->where("openid='{$userinfo['openid']}'")->find();
             
             if ($hasuser) {
+                
                 #更新用户信息
                 $this->mem_model
                     ->where(array('id' => $hasuser['id']))
@@ -65,29 +110,43 @@ class Passport extends Common {
                         'lasttime' => time()
                         )
                     );
-                
-                session("userid", $hasuser['id'],3600*24*15);
+                session("userid", $hasuser['id']);
                 #是否绑定手机
                 if (!$hasuser['mobile']) {
                     $this->redirect("bee/Passport/bindPhone",["state"=>$state]);
                 } else {
-                    $this->redirect($state);
+                    $this->redirect("bee/Index/index");
                 }
             }else{
-                #创建用户
-                $res = $this->mem_model
-                    ->insertGetId(
-                    array(
-                        'nickname' => $nickname, 
-                        'openid' => $openid, 
-                        'avatarurl' => $headimg, 
-                        'regtime' => time(), 
-                        'createtime' => time()
-                        )
-                    );
-                session("userid", $res, 3600*24*15);
-                $this->redirect("bee/Passport/bindPhone",["state"=>$state]);
+                
+                if ($state) {
+                    $parent = $this->mem_model->where("serviceid='{$state}'")->find();
+                } else {
+                    $parent['id'] = 0;
+                }
+                
+                $ins_data = array(
+                    'nickname' => $nickname, 
+                    'openid' => $openid, 
+                    'avatarurl' => $headimg, 
+                    'createtime' => time(),
+                    'parent_id' => $parent['id']
+                );
+                
+                $res = $this->mem_model->insertGetId($ins_data);
+                if ($res) {
+                    if ($parent['id']) {
+                        db('membership')->insert(array('uid'=>$res, 'parentid'=>$parent['id'], 'createtime'=>time()));
+                    } 
+                    $this->mem_model->where("id='{$res}'")->update(array("serviceid"=>"FM".rand(10000,99999).$res));
+                    session("userid", $res);
+                    $this->redirect("bee/Passport/bindPhone",["state"=>$state]);
+                } else {
+                    $this->redirect("bee/Index/index");
+                }
             }
+        } else {
+            $this->redirect("bee/Index/index");
         }
     }
     
@@ -99,7 +158,7 @@ class Passport extends Common {
         
         $uid = session("userid");
         if (!$uid) {
-            $this->checklogin();
+            #$this->checklogin();
         }
         
         if ($ispost) {

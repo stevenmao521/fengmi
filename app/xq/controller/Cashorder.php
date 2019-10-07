@@ -89,21 +89,21 @@ class Cashorder extends Common{
                     $diff = 10 - $count_uid;
                 }
                 $plat_money = $cash_item * $diff;
-                $this->mem_model->where("id='1000000'")->setInc("balance", $plat_money);
-                $this->mem_model->where("id='1000000'")->setInc("total_balance", $plat_money);
-                $member_plat = $this->mem_model->where("id='1000000'")->find();
+                $this->mem_model->where("id='10000'")->setInc("balance", $plat_money);
+                $this->mem_model->where("id='10000'")->setInc("total_balance", $plat_money);
+                $member_plat = $this->mem_model->where("id='10000'")->find();
                 $after_money = $member_plat['balance'];
-                mz_flow(1000000, "", 5, "+".$plat_money, "提现平台收回 ".$diff."%", $after_money);
+                mz_flow(10000, "", 5, "+".$plat_money, "提现平台收回 ".$diff."%", $after_money);
                 
             } else {
                 $diff = 10;
                 $plat_money = $cash_item * $diff;
                 #全部平台
-                $this->mem_model->where("id='1000000'")->setInc("balance", $plat_money);
-                $this->mem_model->where("id='1000000'")->setInc("total_balance", $plat_money);
-                $member_plat = $this->mem_model->where("id='1000000'")->find();
+                $this->mem_model->where("id='10000'")->setInc("balance", $plat_money);
+                $this->mem_model->where("id='10000'")->setInc("total_balance", $plat_money);
+                $member_plat = $this->mem_model->where("id='10000'")->find();
                 $after_money = $member_plat['balance'];
-                mz_flow(1000000, "", 5, "+".$plat_money, "提现平台收回 ".$diff."%", $after_money);
+                mz_flow(10000, "", 5, "+".$plat_money, "提现平台收回 ".$diff."%", $after_money);
             }
             
             #日志

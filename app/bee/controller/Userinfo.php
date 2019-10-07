@@ -145,8 +145,6 @@ class Userinfo extends Common {
         return $this->fetch();
     }
     
-    
-    
     #我的推广
     public function myshare() {
         $uid = session("userid");
@@ -159,7 +157,13 @@ class Userinfo extends Common {
     
     #我的二维码
     public function qrcode() {
-        
+        $uid = session("userid");
+        $member = $this->mem_model->where("id='{$uid}'")->find();
+        $serviceid = $member['serviceid'];
+        $host = Config::get('host');
+        $url = "http://".$host."/bee/Passport/share/id/".$serviceid;
+        echo $this->helper->scerweima($url);
+        exit;
     }
     
     #我的收获地址

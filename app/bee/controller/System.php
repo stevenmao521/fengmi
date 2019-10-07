@@ -47,6 +47,7 @@ class System extends Common {
     
     public function done() {
         $uid = session("userid");
+        $this->checklogin();
         $id = input("id");
         
         #检查订单状态
@@ -84,6 +85,7 @@ class System extends Common {
     
     public function donetest() {
         $uid = session("userid");
+        $this->checklogin();
         $id = input("id");
         
         #更新订单状态

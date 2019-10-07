@@ -37,19 +37,39 @@ class Common extends Controller{
         $uid = session("userid");
         $wx_info = db("wx_user")->find();
         $appid = $wx_info['appid'];
-        $secret = $wx_info['appsecret'];
         
         if (!$uid) {
             //微信网页授权
             #回调页面 绑定页面
             $host = Config::get('host');
             #未绑定手机跳转手机绑定页面
-            $jump = $_SERVER['REQUEST_URI'];
+            #$jump = $_SERVER['REQUEST_URI'];
             $bind = "bee-Passport-index";
-            $redirect_uri = urlencode ('http://'.$host."/".$bind);
-            
-            $url ="https://open.weixin.qq.com/connect/oauth2/authorize?appid=$appid&redirect_uri=$redirect_uri&response_type=code&scope=snsapi_userinfo&state={$jump}&connect_redirect=1#wechat_redirect";
+            $redirect_uri = urlencode('http://'.$host."/".$bind);
+            $url ="https://open.weixin.qq.com/connect/oauth2/authorize?appid=$appid&redirect_uri=$redirect_uri&response_type=code&scope=snsapi_userinfo&state=1&connect_redirect=1#wechat_redirect";
             header("Location:".$url);
+            exit;
+        } else {
+            $user = db('members')->where("id='{$uid}'")->find();
+            
+            if ($user) {
+                if (!$user['mobile']) {
+                    $this->redirect("bee/Passport/bindPhone");
+                }
+            } else {
+                session("userid",null);
+                //微信网页授权
+                #回调页面 绑定页面
+                $host = Config::get('host');
+                #未绑定手机跳转手机绑定页面
+                #$jump = $_SERVER['REQUEST_URI'];
+                $bind = "bee-Passport-index";
+                $redirect_uri = urlencode('http://'.$host."/".$bind);
+                
+                $url ="https://open.weixin.qq.com/connect/oauth2/authorize?appid=$appid&redirect_uri=$redirect_uri&response_type=code&scope=snsapi_userinfo&state=1&connect_redirect=1#wechat_redirect";
+                header("Location:".$url);
+                exit;
+            }
         }
     }
     

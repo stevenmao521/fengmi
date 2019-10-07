@@ -90,10 +90,8 @@ class Mall extends Common {
     public function addcart() {
         $id = input("id");
         $uid = session("userid");
+        $this->checklogin();
         
-        if (!$uid) {
-            $this->checklogin();
-        }
 
         $product = $this->product_model->where("id='{$id}'")->find();
         $member = $this->mem_model->where("id='{$uid}'")->find();
@@ -129,10 +127,7 @@ class Mall extends Common {
     #购物车列表
     public function cart() {
         $uid = session("userid");
-        
-        if (!$uid) {
-            $this->checklogin();
-        }
+        $this->checklogin();
 
         $cart_list = $this->cart_model
             ->where("uid='{$uid}'")->order("createtime desc")->select();
@@ -154,10 +149,7 @@ class Mall extends Common {
     #创建订单
     public function addorder() {
         $uid = session("userid");
-        
-        if (!$uid) {
-            $this->checklogin();
-        }
+        $this->checklogin();
         
         $data = input("data");
         $member = $this->mem_model->where("id='{$uid}'")->find();
@@ -311,9 +303,7 @@ class Mall extends Common {
     #立即购买
     public function addordernow() {
         $uid = session("userid");
-        if (!$uid) {
-            $this->checklogin();
-        }
+        $this->checklogin();
         
         $member = $this->mem_model->where("id='{$uid}'")->find();
         $product_id = input("id");
@@ -391,9 +381,7 @@ class Mall extends Common {
     #订单详情页
     public function orderdetail() {
         $uid = session("userid");
-        if (!$uid) {
-            $this->checklogin();
-        }
+        $this->checklogin();
         
         $order_info = $this->order_model->where("uid='{$uid}' and status=0")->order("createtime desc")->find();
         #订单商品
@@ -411,9 +399,7 @@ class Mall extends Common {
     #订单测试已付款
     public function orderpay() {
         $uid = session("userid");
-        if (!$uid) {
-            $this->checklogin();
-        }
+        $this->checklogin();
         
         $id = input("id");
         $res = $this->order_model->where("id='{$id}'")->update(array('haspay' => 1, 'paytime' => time(), "status" => 1));

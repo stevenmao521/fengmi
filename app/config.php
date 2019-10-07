@@ -259,5 +259,5 @@ return [
     'addwater'=>false,
     'watertext'=>'CLTPHP',
     'version'=>'5.2',
-    'host'=>'www.fengmi.com',
+    'host'=>'fmall.yuntim.cn',
 ];

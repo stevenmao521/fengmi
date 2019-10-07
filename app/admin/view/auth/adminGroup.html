@@ -18,6 +18,7 @@
     <a href="{:url('groupEdit')}?id={{d.group_id}}" class="layui-btn layui-btn-warm layui-btn-mini">{:lang('edit')}</a>
     <a class="layui-btn layui-btn-danger layui-btn-mini" lay-event="del">{:lang('del')}</a>
     {{# }else{ }}
+    <a href="{:url('groupAccess')}?id={{d.group_id}}" class="layui-btn layui-btn-mini layui-btn-normal">配置规则</a>
     <a href="{:url('groupEdit')}?id={{d.group_id}}" class="layui-btn layui-btn-warm layui-btn-mini">{:lang('edit')}</a>
     {{# } }}
 </script>

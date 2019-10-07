@@ -351,17 +351,17 @@ class Auth extends Common
         $key = $arr[1];
         
         $sql = "INSERT INTO `clt_auth_rule` (`href`, `title`, `type`, `status`, `authopen`, `icon`, `condition`, `pid`, `sort`, `addtime`, `zt`, `menustatus`) VALUES
-        ('xj/{$key}/index', '列表', 1, 1, 0, '', '', {$id}, 0, 1519622406, NULL, 1),
-        ('xj/{$key}/add', '添加', 1, 1, 0, '', '', {$id}, 1, 1519622406, NULL, 1),
-        ('xj/{$key}/edit', '修改', 1, 1, 0, '', '', {$id}, 2, 1519622406, NULL, 1),
-        ('xj/{$key}/listDel', '删除', 1, 1, 0, '', '', {$id}, 3, 1519622406, NULL, 1),
-        ('xj/{$key}/listBack', '还原', 1, 1, 0, '', '', {$id}, 4, 1519622406, NULL, 1),
-        ('xj/{$key}/listRush', '彻底删除', 1, 1, 0, '', '', {$id}, 5, 1519622406, NULL, 1),
-        ('xj/{$key}/delAll', '全部删除', 1, 1, 0, '', '', {$id}, 6, 1519622406, NULL, 1),
-        ('xj/{$key}/backAll', '全部还原', 1, 1, 0, '', '', {$id}, 7, 1519622406, NULL, 1),
-        ('xj/{$key}/rushAll', '全部彻底删除', 1, 1, 0, '', '', {$id}, 8, 1519622406, NULL, 1),
-        ('xj/{$key}/trash', '回收站', 1, 1, 0, '', '', {$id}, 9, 1519622406, NULL, 1),
-        ('xj/{$key}/log', '操作日志', 1, 1, 0, '', '', {$id}, 10, 1519622406, NULL, 1);";
+        ('xq/{$key}/index', '列表', 1, 1, 0, '', '', {$id}, 0, 1519622406, NULL, 1),
+        ('xq/{$key}/add', '添加', 1, 1, 0, '', '', {$id}, 1, 1519622406, NULL, 1),
+        ('xq/{$key}/edit', '修改', 1, 1, 0, '', '', {$id}, 2, 1519622406, NULL, 1),
+        ('xq/{$key}/listDel', '删除', 1, 1, 0, '', '', {$id}, 3, 1519622406, NULL, 1),
+        ('xq/{$key}/listBack', '还原', 1, 1, 0, '', '', {$id}, 4, 1519622406, NULL, 1),
+        ('xq/{$key}/listRush', '彻底删除', 1, 1, 0, '', '', {$id}, 5, 1519622406, NULL, 1),
+        ('xq/{$key}/delAll', '全部删除', 1, 1, 0, '', '', {$id}, 6, 1519622406, NULL, 1),
+        ('xq/{$key}/backAll', '全部还原', 1, 1, 0, '', '', {$id}, 7, 1519622406, NULL, 1),
+        ('xq/{$key}/rushAll', '全部彻底删除', 1, 1, 0, '', '', {$id}, 8, 1519622406, NULL, 1),
+        ('xq/{$key}/trash', '回收站', 1, 1, 0, '', '', {$id}, 9, 1519622406, NULL, 1),
+        ('xq/{$key}/log', '操作日志', 1, 1, 0, '', '', {$id}, 10, 1519622406, NULL, 1);";
         
         Db::execute($sql);
         return $result = ['code'=>1,'msg'=>'生成成功!'];

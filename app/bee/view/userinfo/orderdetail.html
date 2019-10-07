@@ -60,8 +60,8 @@
                 
                 {if condition="$status eq 3"}
                 <div class="mar1">
-                    <span class="yel-color">申通快递</span>
-                    <span class="yel-color">ST0254456656</span>
+                    <span class="yel-color">{$order_info['express']}</span>
+                    <span class="yel-color">{$order_info['expresscode']}</span>
                 </div>
                 {/if}
                 
@@ -104,12 +104,17 @@
             <input type="button" value="确认收获" class="btn" onclick="finish_order_test({$order_info.id});"/>
         </div>
         
+        {if condition="$order_info.issend eq 2 and $status neq 4"}
+        
         <div class="page-foot-btn-box ">
             <div class="page-foot-btn dianbo">
                 <p class="price"><span class="adorn">{$left_time}后自动收获</span></p>
                 <a class="buy" href="javascript:;" onclick="finish_order({$order_info.id});">确认收货</a>
             </div>
         </div>
+        
+        {/if}
+        
     </body>
     <script src="__STATIC__/bee/js/jquery.min.js"></script>
     <script src="__STATIC__/bee/js/circleChart.min.js"></script>
@@ -126,6 +131,7 @@
             success:function(data){
                 if (data.code == 1) {
                     alert(data.msg);
+                    location.href="{:url('userinfo/myorder')}";
                 } else {
                     alert(data.msg);
                 }
@@ -143,6 +149,7 @@
             success:function(data){
                 if (data.code == 1) {
                     alert(data.msg);
+                    
                 } else {
                     alert(data.msg);
                 }

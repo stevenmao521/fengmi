@@ -75,12 +75,12 @@ class Smscode extends Common{
         $mobile_code = mz_random(4,1);
         
         #短信接口
-        $appid = 1400254722;
-        $appkey = "723b9d61d89abc4a7e9f596116a08fc3";
-        $singleSender = new SmsSingleSender($appid, $appkey);
-
-        #普通单发
-        $result = $singleSender->send(0, "86", $mobile, "您的验证码为:".$mobile_code, "", "");
+//        $appid = 1400254722;
+//        $appkey = "723b9d61d89abc4a7e9f596116a08fc3";
+//        $singleSender = new SmsSingleSender($appid, $appkey);
+//
+//        #普通单发
+//        $result = $singleSender->send(0, "86", $mobile, "您的验证码为:".$mobile_code, "", "");
         #end
         
         $data = array(

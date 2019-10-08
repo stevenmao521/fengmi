@@ -16,6 +16,7 @@ namespace app\bee\controller;
 use think\Config;
 use think\Db;
 use app\bee\service\HelperDao;
+use clt\WeixinPay;
 
 class Mall extends Common {
 
@@ -29,6 +30,8 @@ class Mall extends Common {
     protected $flow_model;
     protected $levellog_model;
     protected $productcate_model;
+    protected $config;#微信支付配置
+    protected $config_pay;
 
     public function _initialize() {
         parent::_initialize();
@@ -43,6 +46,8 @@ class Mall extends Common {
         $this->flow_model = model("Memberflow");
         $this->levellog_model = model("Levellog");
         $this->productcate_model = model("Productcate");
+        $this->config = Config::get('wechat');
+        $this->config_pay = Config::get('wxpay');
     }
     
     #列表
@@ -428,6 +433,63 @@ class Mall extends Common {
                 $this->mem_model->where("id='{$uid}'")->update(array("level"=>2));
             }
             
+            return mz_apisuc("支付成功");
+        } else {
+            return mz_apierror("支付失败");
+        }
+    }
+    
+    #微信支付接口
+    public function orderpaywx() {
+        $uid = session("userid");
+        #$this->checklogin();
+        $id = input("id");
+        #$order = $this->order_model->where("id='{$id}'")->find();
+        $mem = $this->mem_model->where("id='{$uid}'")->find();
+        $fee = $order['total_price'] * 100;
+        $fee = '0.01';
+        $weixinpay = new WeixinPay(
+            $this->config['wx_appid'], 
+            $mem['openid'], 
+            $this->config_pay['mch_id'], 
+            $this->config_pay['api_sec'], 
+            $order['orderid'],
+            '蜜蜂商城', 
+            $fee * 100, 
+            $this->config_pay['notify_url']
+        );
+        $return = $weixinpay->pay();
+        return mz_apisuc("成功", $return);
+    }
+    
+    #wx回调
+    public function paysuc() {
+        $id = input("orderid");
+        $res = $this->order_model->where("id='{$id}'")->update(array('haspay' => 1, 'paytime' => time(), "status" => 1));
+        if ($res) {
+            #更新流水记录
+            $order_info = $this->order_model->where("id='{$id}'")->find();
+            $uid = $order_info['uid'];
+            $member_info = $this->mem_model->where("id='{$uid}'")->find();
+            mz_flow($uid, $id, 4, "-".$order_info['total_price'], "购买蜂蜜支出", $member_info['balance']);
+            
+            #增加商品销量
+            $order_detail = $this->order_detail_model->where("oid='{$order_info['id']}'")->select();
+            foreach ($order_detail as $k=>$v) {
+                $this->product_model->where("id='{$v['product_id']}'")->setInc("selnums", $v['nums']);
+            }
+            #更新用户等级
+            if ($member_info['level'] == 1) {
+                #进行升级，并记录日志
+                $ins_data = array();
+                $ins_data['uid'] = $uid;
+                $ins_data['direct_nums'] = 0;
+                $ins_data['indirect_nums'] = 0;
+                $ins_data['des'] = "达到 业务员 等级进行升级";
+                $ins_data['createtime'] = time();
+                $this->levellog_model->insert($ins_data);
+                $this->mem_model->where("id='{$uid}'")->update(array("level"=>2));
+            }
             return mz_apisuc("支付成功");
         } else {
             return mz_apierror("支付失败");

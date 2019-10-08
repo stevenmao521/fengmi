@@ -1,5 +1,6 @@
 <?php
 /** Error reporting */
+#微信回调
 error_reporting(E_ALL & ~E_NOTICE);
 error_reporting(0);
 
@@ -32,16 +33,16 @@ $addtime = time();
 
 #订单id
 #$ordernumber = '2018062010210110';
-$res = $db_helper->query("select * from clt_parkorder where order_sn='{$ordernumber}'");
+$res = $db_helper->query("select * from clt_order where orderid='{$ordernumber}'");
 $order = $db_helper->fetch_assoc($res);
 $orderid = $order['id'];
 
 if ($post_data['return_code'] == 'SUCCESS' && $postSign) {
     $columnName = "";
     $value = "";
-    $db_helper->query("insert into clt_wxback (order_sn,total_fee,open_id,time,addtime) values ('{$ordernumber}',{$total_fee},'{$open_id}','{$time}','{$addtime}')");
+    #$db_helper->query("insert into clt_wxback (order_sn,total_fee,open_id,time,addtime) values ('{$ordernumber}',{$total_fee},'{$open_id}','{$time}','{$addtime}')");
     
-    $url = "http://{$_SERVER['HTTP_HOST']}/api/Callback/paysuc";
+    $url = "http://{$_SERVER['HTTP_HOST']}/bee/Mall/paysuc";
     $postData = array("orderid"=>$orderid);
     $return = $db_helper->curlPost($url, $postData);
     echo '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';

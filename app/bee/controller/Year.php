@@ -44,7 +44,7 @@ class Year extends Common {
         $this->sysconfig_model = model("Sysconfig");
         $this->levellog_model = model("Levellog");
         
-        $this->start = "2018-4";
+        $this->start = "2019-8";
         $this->end = "2019-10";
         
         
@@ -70,12 +70,13 @@ class Year extends Common {
     
     
     public function recurrence($uid, &$result=array()) {
-        $child = $this->mem_model->where("parent_id='{$uid}'")->select();
+        $child = db('members')->where("parent_id='{$uid}'")->select();
+        
         #是总监 分支截断
         #查询当前总监的总推销数
         foreach ($child as $k=>$v) {
             if ($v['level'] == 4) {
-                $mem_res = $this->memberresult_model->where("uid='{$v['id']}'")->select();
+                $mem_res = db("memberresult")->where("uid='{$v['id']}'")->select();
                 if ($mem_res) {
                     $nums = 0;
                     foreach ($mem_res as $k1=>$v1) {
@@ -84,8 +85,9 @@ class Year extends Common {
                         $start_str = strtotime($start."-01 00:00");
                         $end_str = strtotime($end."-29 00:00");
                         
-                        $result_time = strtotime($v1['year'].$v1['month']."-01 00:00");
-                        if ($result_time>=$start && $result_time<=$end_str) {
+                        $result_time = strtotime($v1['year']."-".$v1['month']."-01 00:00");
+                        
+                        if ($result_time>=$start_str && $result_time<=$end_str) {
                             $nums += $v1['direct_nums'] + $v1['redirect_nums'];
                         }
                     }

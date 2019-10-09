@@ -2,35 +2,45 @@
 <div class="admin-main layui-anim layui-anim-upbit">
     <div class="layui-tab layui-tab-brief" lay-filter="docDemoTabBrief">
         <ul class="layui-tab-title">
-            <li class="layui-this"><a href="{:url('memberyear/index')}">分销年终奖</a></li>
-            <li class=""><a href="{:url('memberyear/orderlist')}">年终奖发放单</a></li>
+            <li class=""><a href="{:url('memberyear/index')}">分销年终奖</a></li>
+            <li class="layui-this"><a href="{:url('memberyear/orderlist')}">年终奖发放单</a></li>
         </ul>
-    </div>
-    <!-- 筛选列表 -->
-    <div class="demoTable layui-form">
-        <div class="layui-form-item" id="search_box" >
-            <div class="layui-inline">
-                <label class="layui-form-label" style="width:auto;float:left;">选择日期</label>
-                <div class="layui-input-inline"><input type="text" class="layui-input" id="start" name="sendtime_start" placeholder="起始" lay-key="3"></div>
-                <div class="layui-input-inline"><input type="text" class="layui-input" id="end" name="sendtime_start" placeholder="结束" lay-key="4"></div>
-            </div>
-        </div>
-        <blockquote class="layui-elem-quote">
-            <button class="layui-btn layui-btn-small" id="search" data-type="reload" >{:lang('search')}</button>
-            <button class="layui-btn layui-btn-small" id="sendward" data-type="reload" >生成年终奖发放单</button>
-        </blockquote>
     </div>
     
     <table class="layui-table" id="list" lay-filter="list">
         <tr>
-            <th>uid</th>
-            <th>昵称</th>
-            <th>等级</th>
-            <th>团队销量</th>
-            <th>应奖励</th>
-            <th>感恩上级奖励</th>
+            <th>名称</th>
+            <th>开始日期</th>
+            <th>结束日期</th>
+            <th>达标人数</th>
+            <th>总推销瓶数</th>
+            <th>发放总金额</th>
             <th>状态</th>
+            <th>操作</th>
         </tr>
+        {volist name='list' id='item'}
+        <tr>
+            <td>{$item.name}</td>
+            <td>{$item.start}</td>
+            <td>{$item.end}</td>
+            <td>{$item.allperson}</td>
+            <td>{$item.allnums}</td>
+            <td>{$item.allreward}</td>
+            <td>
+                {if condition="$item.status eq 0"}
+                未发放
+                {else/}
+                已发放
+                {/if}
+            </td>
+            <td>
+                {if condition="$item.status eq 0"}
+                <a  data="{$item.id}" class="layui-btn layui-btn-mini reward">发放</a>
+                {/if}
+            </td>
+            
+        </tr>
+        {/volist}
     </table>
 </div>
 
@@ -49,6 +59,31 @@
         laydate.render({
           elem: '#end',
           type: 'month'
+        });
+        
+        //发
+        $('.reward').on('click', function() {
+            var id = $(this).attr("data");
+            layer.confirm('确定发放？', {icon: 3}, function(index) {
+                $.ajax({
+                    url:'{:url("Memberyear/reward")}',
+                    data: {id:id},
+                    type:"post",
+                    dataType:"json",
+                    success:function(data){
+                        if (data.code == 0) {
+                            layer.msg(data.msg,{time:1000,icon:2});
+                        } else {
+                            layer.msg(data.msg,{time:1000,icon:1});
+                            location.reload();
+                        }
+                    },
+                    error:function(data){
+
+                    }
+                });
+                
+            });
         });
         
         //搜索

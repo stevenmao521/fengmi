@@ -17,6 +17,8 @@ class Memberyear extends Common{
     protected $logid; #日志模型id
     protected $form;    #表单
     protected $helper;  #工具
+    protected $neednums;
+
     #初始化
     public function _initialize() {
         
@@ -43,6 +45,9 @@ class Memberyear extends Common{
             $this->olist = db($mod_info['olist']);
             $this->assign('olist', $mod_info['olist']);
         }
+        
+        $this->neednums = 1000;
+        
         $this->assign('moduleid', $this->moduleid);
         $this->assign ('fields',$this->fields);#新增编辑字段
         $this->assign('modname', $this->modname);
@@ -51,8 +56,8 @@ class Memberyear extends Common{
     #年终
     public function index(){
         $ispost = input("ispost");
-        #$host = Config::get('host');
-        $host = "www.fengmi.com";
+        $host = Config::get('host');
+        #$host = "www.fengmi.com";
         if ($ispost) {
             $start = input("start");
             $end = input("end");
@@ -78,7 +83,7 @@ class Memberyear extends Common{
                     $tmp['nickname'] = $v['nickname'];
                     $tmp['level'] = "销售总监";
                     $tmp['result'] = $v['bottles'];
-                    if ($v['bottles'] >= 100) {
+                    if ($v['bottles'] >= $this->neednums) {
                         #奖励金额
                         $reward = $v['bottles'] * 20;
                         $tmp['status'] = "<font style='color:green;'>达到条件</font>";
@@ -128,11 +133,15 @@ class Memberyear extends Common{
         return $this->fetch();
     }
     
-    #年终
-    public function reward(){
+    #生成年终奖发放单
+    public function createorder() {
+        
+        $year_order_model = db("yearorder");
+        $year_orderdetail_model = db("yearorderdetail");
+        
         $ispost = input("ispost");
-        #$host = Config::get('host');
-        $host = "www.fengmi.com";
+        $host = Config::get('host');
+        #$host = "www.fengmi.com";
         if ($ispost) {
             $start = input("start");
             $end = input("end");
@@ -140,6 +149,14 @@ class Memberyear extends Common{
             if (!$start || !$end) {
                 return mz_apierror("请选择日期");
             }
+            
+            $ins_data = array();
+            $ins_data['name'] = $start."至".$end."年终奖发放单";
+            $ins_data['start'] = $start;
+            $ins_data['end'] = $end;
+            $ins_data['createtime'] = time();
+            $oid = $year_order_model->insertGetId($ins_data);
+            
             $url = "http://".$host."/bee/Year/done";
             $params = array("start"=>$start, "end"=>$end);
             $res_json = mz_http_send($url, $params, "POST");
@@ -150,11 +167,22 @@ class Memberyear extends Common{
                 
                 $tj_bottles = 0;
                 $tj_award = 0;
+                $tj_nums = 0;
                 
                 foreach ($res as $k=>$v) {
-                    if ($v['bottles'] >= 10) {
+                    $tmp = array();
+                    $tmp['uid'] = $v['uid'];
+                    $tmp['nickname'] = $v['nickname'];
+                    $tmp['level'] = "销售总监";
+                    $tmp['result'] = $v['bottles'];
+                    if ($v['bottles'] >= $this->neednums) {
                         #奖励金额
                         $reward = $v['bottles'] * 20;
+                        $tmp['status'] = "<font style='color:green;'>达到条件</font>";
+                        
+                        $tj_bottles += $v['bottles'];
+                        $tj_award += $reward;
+                        $tj_nums++;
                         
                         #上级是否销售总监
                         $mem_info = db("members")->where("id='{$v['uid']}'")->find();
@@ -162,47 +190,83 @@ class Memberyear extends Common{
                             $parent = db("members")->where("id='{$mem_info['parent_id']}'")->find();
 
                             if ($parent['level'] == 4) {
-                                $myreward = ($reward/10) * 9;
-                                $father = $reward/10;
-                                
-                                #增加金额
-                                db("members")->where("id='{$mem_info['id']}'")->setInc("balance", $myreward);
-                                db("members")->where("id='{$mem_info['id']}'")->setInc("total_balance", $myreward);
-                                
-                                db("members")->where("id='{$mem_info['parent_id']}'")->setInc("balance", $father);
-                                db("members")->where("id='{$mem_info['parent_id']}'")->setInc("total_balance", $father);
-                                
-                                $balance1 = db("members")->where("id='{$mem_info['id']}'")->column("balance");
-                                $balance2 = db("members")->where("id='{$mem_info['parent_id']}'")->column("balance");
-                                
-                                mz_flow($mem_info['id'], "", 5, "+".$myreward, "年终奖", $balance1[0]);
-                                mz_flow($mem_info['parent_id'], "", 6, "+".$father, "年终奖感恩", $balance2[0]);
-                                
+                                $tmp['reward'] = ($reward/10) * 9;
+                                $tmp['father'] = $reward/10;
                             } else {
-                                $myreward = $reward;
-                                
-                                db("members")->where("id='{$mem_info['id']}'")->setInc("balance", $myreward);
-                                db("members")->where("id='{$mem_info['id']}'")->setInc("total_balance", $myreward);
-                                $balance1 = db("members")->where("id='{$mem_info['id']}'")->column("balance");
-                                mz_flow($mem_info['id'], "", 5, "+".$myreward, "年终奖", $balance1[0]);
+                                $tmp['reward'] = $reward;
+                                $tmp['father'] = 0;
                             }
                         } else {
-                            $myreward = $reward;
-                            db("members")->where("id='{$mem_info['id']}'")->setInc("balance", $myreward);
-                            db("members")->where("id='{$mem_info['id']}'")->setInc("total_balance", $myreward);
-                            $balance1 = db("members")->where("id='{$mem_info['id']}'")->column("balance");
-                            mz_flow($mem_info['id'], "", 5, "+".$myreward, "年终奖", $balance1[0]);
+                            $tmp['reward'] = $reward;
+                            $tmp['father'] = 0;
                         }
-                    } 
+                        $tmp['oid'] = $oid;
+                        $year_orderdetail_model->insert($tmp);
+                    }
+                    
                 }
-                
-                return mz_apisuc("成功", $return);
+                $year_order_model->where("id='{$oid}'")->update(array(
+                    "allnums"=>$tj_bottles,
+                    "allreward"=>$tj_award,
+                    "allperson"=>$tj_nums,
+                    "status"=>0
+                ));
+                return mz_apisuc("生成发放单成功", $return);
                 
             } else {
-                return mz_apierror("失败，没有数据");
+                return mz_apierror("失败");
             }
         }
+    }
+    
+    #年终列表
+    public function orderlist() {
+        $list = db("yearorder")->order("createtime desc")->select();
+        if ($list) {
+            foreach ($list as $k=>$v) {
+                $list[$k]['date'] = date("Y-m-d H:i",$v['createtime']);
+            }
+        }
+        $this->assign("list", $list);
         return $this->fetch();
+    }
+    
+    
+    #年终
+    public function reward(){
+        $id = input("id");
+        
+        $order = db("yearorder")->where("id='{$id}'")->find();
+        if ($order['status'] == 1) {
+            return mz_apierror("已经发放");
+        }
+        
+        $res = db("yearorderdetail")->where("oid='{$id}'")->select();
+        foreach ($res as $k=>$v) {
+            if ($v['father'] > 0) {
+                $parent = db("members")->where("id='{$v['uid']}'")->find();
+                
+                #增加金额
+                db("members")->where("id='{$v['uid']}'")->setInc("balance", $v['reward']);
+                db("members")->where("id='{$v['uid']}'")->setInc("total_balance", $v['reward']);
+
+                db("members")->where("id='{$parent['parent_id']}'")->setInc("balance", $v['father']);
+                db("members")->where("id='{$parent['parent_id']}'")->setInc("total_balance", $v['father']);
+
+                $balance1 = db("members")->where("id='{$v['uid']}'")->column("balance");
+                $balance2 = db("members")->where("id='{$parent['parent_id']}'")->column("balance");
+
+                mz_flow($v['uid'], "", 6, "+" . $v['reward'], "年终奖", $balance1[0]);
+                mz_flow($parent['parent_id'], "", 7, "+" . $v['father'], "下级年终奖感恩", $balance2[0]);
+            } else {
+                db("members")->where("id='{$v['uid']}'")->setInc("balance", $v['reward']);
+                db("members")->where("id='{$v['uid']}'")->setInc("total_balance", $v['reward']);
+                $balance1 = db("members")->where("id='{$v['uid']}'")->column("balance");
+                mz_flow($v['uid'], "", 6, "+" . $v['reward'], "年终奖", $balance1[0]);
+            }
+        }
+        db("yearorder")->where("id='{$id}'")->update(array("status"=>1));
+        return mz_apisuc("发放成功");
     }
     
 }

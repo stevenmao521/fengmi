@@ -13,7 +13,6 @@ namespace app\bee\controller;
 use think\Config;
 use think\Db;
 use app\bee\service\HelperDao;
-
 class Year extends Common {
     
     protected $helper;
@@ -29,7 +28,6 @@ class Year extends Common {
     
     protected $start;
     protected $end;
-
     public function _initialize() {
         parent::_initialize();
         $this->assign("title", "个人中心");
@@ -47,7 +45,6 @@ class Year extends Common {
         $this->start = "2019-8";
         $this->end = "2019-10";
         
-        
         #检查登陆
         #$this->checklogin();
     }
@@ -55,19 +52,49 @@ class Year extends Common {
     public function done() {
         $level3_list = db('members')->where("level=4")->select();
         
-        $start = "2018-09";
-        $end = "2019-10";
+        $start = input('start');
+        $end = input('end');
+        #$this->start = $start;
+        #$this->end = $end;
         
+        $return = array();
         foreach ($level3_list as $k=>$v) {
+            $tmp = array();
             #需要减去的瓶数
             $result = array();
             $result = $this->recurrence($v['id'], $result);
-            $level3_list[$k]['res'] = $result;
+            
+            $nums = 0;
+            if ($result) {
+                foreach ($result as $k1=>$v1) {
+                    $nums += $v1;
+                }
+            }
+            
+            $mem_res = db("memberresult")->where("uid='{$v['id']}'")->select();
+            if ($mem_res) {
+                $my_nums = 0;
+                foreach ($mem_res as $k1 => $v1) {
+                    $start = $this->start;
+                    $end = $this->end;
+                    $start_str = strtotime($start . "-01 00:00");
+                    $end_str = strtotime($end . "-29 00:00");
+                    $result_time = strtotime($v1['year'] . "-" . $v1['month'] . "-01 00:00");
+                    if ($result_time >= $start_str && $result_time <= $end_str) {
+                        $my_nums += $v1['direct_nums'] + $v1['redirect_nums'];
+                    }
+                }
+            }
+            
+            #减去分支团队瓶数即当前团队有效瓶数
+            $tmp['uid'] = $v['id'];
+            $tmp['nickname'] = $v['nickname'];
+            $tmp['bottles'] = $my_nums - $nums;
+            $return[] = $tmp;
         }
-        
-        print_r($level3_list);
+        return json_encode($return,1);
+        exit;
     }
-    
     
     public function recurrence($uid, &$result=array()) {
         $child = db('members')->where("parent_id='{$uid}'")->select();
@@ -99,6 +126,4 @@ class Year extends Common {
         }
         return $result;
     }
-    
-    
 }

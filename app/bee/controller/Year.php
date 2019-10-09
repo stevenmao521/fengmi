@@ -42,8 +42,11 @@ class Year extends Common {
         $this->sysconfig_model = model("Sysconfig");
         $this->levellog_model = model("Levellog");
         
+
         #$this->start = "2019-8";
         #$this->end = "2019-10";
+
+        
         
         #检查登陆
         #$this->checklogin();
@@ -54,8 +57,13 @@ class Year extends Common {
         
         $start = input('start');
         $end = input('end');
+
         $this->start = $start;
         $this->end = $end;
+
+        #$this->start = $start;
+        #$this->end = $end;
+
         
         $return = array();
         foreach ($level3_list as $k=>$v) {
@@ -79,7 +87,9 @@ class Year extends Common {
                     $end = $this->end;
                     $start_str = strtotime($start . "-01 00:00");
                     $end_str = strtotime($end . "-29 00:00");
+
                     $result_time = strtotime($v1['year'] . "-" . $v1['month'] . "-01 00:00");
+
                     if ($result_time >= $start_str && $result_time <= $end_str) {
                         $my_nums += $v1['direct_nums'] + $v1['redirect_nums'];
                     }
@@ -92,8 +102,10 @@ class Year extends Common {
             $tmp['bottles'] = $my_nums - $nums;
             $return[] = $tmp;
         }
+
         return json_encode($return,1);
         exit;
+
     }
     
     public function recurrence($uid, &$result=array()) {

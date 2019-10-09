@@ -5,6 +5,7 @@ use think\Request;
 use think\Controller;
 use clt\Form;//表单
 use app\xq\controller\Helper as Helper;//工具类
+use think\Config;
 
 class Memberyear extends Common{
     protected $modname; #模块名称
@@ -49,6 +50,153 @@ class Memberyear extends Common{
     
     #年终
     public function index(){
+        $ispost = input("ispost");
+        #$host = Config::get('host');
+        $host = "www.fengmi.com";
+        if ($ispost) {
+            $start = input("start");
+            $end = input("end");
+            
+            if (!$start || !$end) {
+                return mz_apierror("请选择日期");
+            }
+            $url = "http://".$host."/bee/Year/done";
+            $params = array("start"=>$start, "end"=>$end);
+            $res_json = mz_http_send($url, $params, "POST");
+            
+            
+            if ($res_json) {
+                $res = json_decode($res_json,1);
+                $return = array();
+                
+                $tj_bottles = 0;
+                $tj_award = 0;
+                
+                foreach ($res as $k=>$v) {
+                    $tmp = array();
+                    $tmp['uid'] = $v['uid'];
+                    $tmp['nickname'] = $v['nickname'];
+                    $tmp['level'] = "销售总监";
+                    $tmp['result'] = $v['bottles'];
+                    if ($v['bottles'] >= 100) {
+                        #奖励金额
+                        $reward = $v['bottles'] * 20;
+                        $tmp['status'] = "<font style='color:green;'>达到条件</font>";
+                        
+                        $tj_bottles += $v['bottles'];
+                        $tj_award += $reward;
+                        
+                    } else {
+                        $reward = 0;
+                        $tmp['status'] = "<font style='color:red;'>未满足</font>";
+                    }
+                    
+                    #上级是否销售总监
+                    $mem_info = db("members")->where("id='{$v['uid']}'")->find();
+                    if ($mem_info['parent_id']) {
+                        $parent = db("members")->where("id='{$mem_info['parent_id']}'")->find();
+                        
+                        if ($parent['level'] == 4) {
+                            $tmp['reward'] = ($reward/10) * 9;
+                            $tmp['father'] = $reward/10;
+                        } else {
+                            $tmp['reward'] = $reward;
+                            $tmp['father'] = 0;
+                        }
+                    } else {
+                        $tmp['reward'] = $reward;
+                        $tmp['father'] = 0;
+                    }
+                    $return[] = $tmp;
+                }
+                $tmp = array();
+                $tmp['uid'] = '统计';
+                $tmp['nickname'] = '奖励总瓶数：'.$tj_bottles;
+                $tmp['level'] = '总奖金：'.$tj_award;
+                $tmp['result'] = "";
+                $tmp['status'] = "";
+                $tmp['reward'] = "";
+                $tmp['father'] = "";
+                $return[] = $tmp;
+                
+                return mz_apisuc("成功", $return);
+                
+            } else {
+                return mz_apierror("没有数据");
+            }
+        }
+        return $this->fetch();
+    }
+    
+    #年终
+    public function reward(){
+        $ispost = input("ispost");
+        #$host = Config::get('host');
+        $host = "www.fengmi.com";
+        if ($ispost) {
+            $start = input("start");
+            $end = input("end");
+            
+            if (!$start || !$end) {
+                return mz_apierror("请选择日期");
+            }
+            $url = "http://".$host."/bee/Year/done";
+            $params = array("start"=>$start, "end"=>$end);
+            $res_json = mz_http_send($url, $params, "POST");
+            
+            if ($res_json) {
+                $res = json_decode($res_json,1);
+                $return = array();
+                
+                $tj_bottles = 0;
+                $tj_award = 0;
+                
+                foreach ($res as $k=>$v) {
+                    if ($v['bottles'] >= 10) {
+                        #奖励金额
+                        $reward = $v['bottles'] * 20;
+                        
+                        #上级是否销售总监
+                        $mem_info = db("members")->where("id='{$v['uid']}'")->find();
+                        if ($mem_info['parent_id']) {
+                            $parent = db("members")->where("id='{$mem_info['parent_id']}'")->find();
+
+                            if ($parent['level'] == 4) {
+                                $myreward = ($reward/10) * 9;
+                                $father = $reward/10;
+                                
+                                #增加金额
+                                db("members")->where("id='{$mem_info['id']}'")->setInc("balance", $myreward);
+                                db("members")->where("id='{$mem_info['id']}'")->setInc("total_balance", $myreward);
+                                
+                                db("members")->where("id='{$mem_info['parent_id']}'")->setInc("balance", $father);
+                                db("members")->where("id='{$mem_info['parent_id']}'")->setInc("total_balance", $father);
+                                
+                                
+                                
+                                mz_flow($mem_info['id'], "+".$myreward, 1, $money, "主管直推提成", $balance[0]);
+                                mz_flow($mem_info['parent_id'], "+".$father, 1, $money, "主管直推提成", $balance[0]);
+                                
+                            } else {
+                                $myreward = ($reward/10) * 9;
+                                $father = $reward/10;
+                                
+                                
+                                
+                            }
+                        } else {
+                            $myreward = ($reward/10) * 9;
+                            
+                        }
+                    } 
+                }
+                
+                return mz_apisuc("成功", $return);
+                
+            } else {
+                return mz_apierror("没有数据");
+            }
+        }
         return $this->fetch();
     }
     

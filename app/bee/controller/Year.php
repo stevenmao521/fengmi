@@ -42,8 +42,8 @@ class Year extends Common {
         $this->sysconfig_model = model("Sysconfig");
         $this->levellog_model = model("Levellog");
         
-        $this->start = "2019-8";
-        $this->end = "2019-10";
+        #$this->start = "2019-8";
+        #$this->end = "2019-10";
         
         #检查登陆
         #$this->checklogin();
@@ -54,8 +54,8 @@ class Year extends Common {
         
         $start = input('start');
         $end = input('end');
-        #$this->start = $start;
-        #$this->end = $end;
+        $this->start = $start;
+        $this->end = $end;
         
         $return = array();
         foreach ($level3_list as $k=>$v) {

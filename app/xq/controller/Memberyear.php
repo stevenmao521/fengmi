@@ -172,21 +172,26 @@ class Memberyear extends Common{
                                 db("members")->where("id='{$mem_info['parent_id']}'")->setInc("balance", $father);
                                 db("members")->where("id='{$mem_info['parent_id']}'")->setInc("total_balance", $father);
                                 
+                                $balance1 = db("members")->where("id='{$mem_info['id']}'")->column("balance");
+                                $balance2 = db("members")->where("id='{$mem_info['parent_id']}'")->column("balance");
                                 
-                                
-                                mz_flow($mem_info['id'], "+".$myreward, 1, $money, "主管直推提成", $balance[0]);
-                                mz_flow($mem_info['parent_id'], "+".$father, 1, $money, "主管直推提成", $balance[0]);
+                                mz_flow($mem_info['id'], "", 5, "+".$myreward, "年终奖", $balance1[0]);
+                                mz_flow($mem_info['parent_id'], "", 6, "+".$father, "年终奖感恩", $balance2[0]);
                                 
                             } else {
-                                $myreward = ($reward/10) * 9;
-                                $father = $reward/10;
+                                $myreward = $reward;
                                 
-                                
-                                
+                                db("members")->where("id='{$mem_info['id']}'")->setInc("balance", $myreward);
+                                db("members")->where("id='{$mem_info['id']}'")->setInc("total_balance", $myreward);
+                                $balance1 = db("members")->where("id='{$mem_info['id']}'")->column("balance");
+                                mz_flow($mem_info['id'], "", 5, "+".$myreward, "年终奖", $balance1[0]);
                             }
                         } else {
-                            $myreward = ($reward/10) * 9;
-                            
+                            $myreward = $reward;
+                            db("members")->where("id='{$mem_info['id']}'")->setInc("balance", $myreward);
+                            db("members")->where("id='{$mem_info['id']}'")->setInc("total_balance", $myreward);
+                            $balance1 = db("members")->where("id='{$mem_info['id']}'")->column("balance");
+                            mz_flow($mem_info['id'], "", 5, "+".$myreward, "年终奖", $balance1[0]);
                         }
                     } 
                 }
@@ -194,7 +199,7 @@ class Memberyear extends Common{
                 return mz_apisuc("成功", $return);
                 
             } else {
-                return mz_apierror("没有数据");
+                return mz_apierror("失败，没有数据");
             }
         }
         return $this->fetch();

@@ -3,18 +3,20 @@
     <div class="layui-tab layui-tab-brief" lay-filter="docDemoTabBrief">
         <ul class="layui-tab-title">
             <li class=""><a href="{:url('order/index')}">订单列表</a></li>
-            <li class="layui-this"><a href="javascript:;">商品列表</a></li>
+            <li class="layui-this"><a href="javascript:;">订单详情</a></li>
         </ul>
     </div>
     <table class="layui-table" id="list" lay-filter="list">
         <tr>
             <th>商品图片</th>
             <th>商品名称</th>
-            <th>单价</th>
-            <th>数量</th>
+            <th>加个</th>
+            <th>订购数量</th>
             <th>是否参与返佣</th>
+            <!--
             <th>总瓶数</th>
             <th>限制类型</th>
+            -->
         </tr>
         {volist name='list.data' id='item'}
         <tr>
@@ -31,6 +33,7 @@
                 参与
                 {/if}
             </td>
+            <!--
             <td>{$item.bottles}</td>
             <td>
                 {if condition="$item.isnew eq 1"}
@@ -39,6 +42,7 @@
                 限复购
                 {/if}
             </td>
+            -->
         </tr>
         {/volist}
     </table>

@@ -52,6 +52,7 @@ class Order extends Common{
         #筛选字段
         $post = input("request.");
         $parentid = $post['id'];
+        
         #列表
         $page =input('page')?input('page'):1;
         $pageSize =input('limit')?input('limit'):config('pageSize');
@@ -65,6 +66,8 @@ class Order extends Common{
             $product = db("product")->where("id='{$v['product_id']}'")->find();
             $list['data'][$k]['pic'] = mz_pic($product['pics']);
         }
+        
+        
 
         #时间转换
         $lfields = $this->lfields;
@@ -76,6 +79,7 @@ class Order extends Common{
                 }
             }
         }
+        $this->assign("id", $parentid);
         $this->assign("list", $list);
         return $this->fetch();
     }

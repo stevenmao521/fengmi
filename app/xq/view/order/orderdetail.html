@@ -3,7 +3,7 @@
     <div class="layui-tab layui-tab-brief" lay-filter="docDemoTabBrief">
         <ul class="layui-tab-title">
             <li class=""><a href="{:url('order/index')}">订单列表</a></li>
-            <li class="layui-this"><a href="javascript:;">订单详情</a></li>
+            <li class="layui-this"><a href="{:url('order/orderdetail')}?id={$id}">订单详情</a></li>
         </ul>
     </div>
     <table class="layui-table" id="list" lay-filter="list">
@@ -46,6 +46,48 @@
         </tr>
         {/volist}
     </table>
+    
+    <table class="layui-table" id="list" lay-filter="list">
+        <tr>
+            <th>订单信息</th>
+            <th></th>
+        </tr>
+        <tr>
+            <td>当前状态</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>订单总金额</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>订单编号</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>下单用户</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>下单时间</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>支付时间</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>发货时间</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>确认收货时间</td>
+            <td></td>
+        </tr>
+    </table>
+    
+    
+    
 </div>
 
 {include file="common/foot"/}

@@ -8,6 +8,7 @@
     </div>
     <table class="layui-table" id="list" lay-filter="list">
         <tr>
+            <th>商品图片</th>
             <th>商品名称</th>
             <th>单价</th>
             <th>数量</th>
@@ -17,6 +18,9 @@
         </tr>
         {volist name='list.data' id='item'}
         <tr>
+            <td>
+                <img src="__PUBLIC__/{$item.pic}" width="75" height="50"/>
+            </td>
             <td>{$item['product_name']}</td>
             <td>{$item.price}</td>
             <td>{$item.nums}</td>

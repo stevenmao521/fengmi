@@ -60,6 +60,11 @@ class Order extends Common{
             ->order('id desc')
             ->paginate(array('list_rows'=>$pageSize,'page'=>$page))
             ->toArray();
+            
+        foreach ($list['data'] as $k=>$v) {
+            $product = db("product")->where("id='{$v['product_id']}'")->find();
+            $list['data'][$k]['pic'] = mz_pic($product['pics']);
+        }
 
         #时间转换
         $lfields = $this->lfields;
@@ -67,6 +72,7 @@ class Order extends Common{
             foreach ($lfields as $k=>$v) {
                 if ($v['type'] == 'datetime') {
                     $list['data'] = mz_formattime($list['data'], $v['field'], 2);
+                    
                 }
             }
         }

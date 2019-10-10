@@ -49,7 +49,6 @@ class WeixinPay {
             'openid' => $this->openid, //用户id
             'trade_type' => 'JSAPI'//交易类型
         );
-        
         //统一下单签名
         //echo $this->appid;
         $parameters['sign'] = $this->getSign($parameters);

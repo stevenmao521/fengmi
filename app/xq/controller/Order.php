@@ -108,4 +108,25 @@ class Order extends Common{
         }
     }
     
+    #订单失效
+    public function isLose() {
+        $map['id'] = input('post.id');
+        #判断当前状态情况
+        $info = $this->dao->where($map)->find();
+        
+        if ($info['status'] != 4) {
+            $data['status'] = 2;
+            $r = $this->dao->where($map)->setField($data);
+            if ($r) {
+                #日志
+                $this->helper->insLog($this->moduleid, 'lose', session('aid'), session('username'), $map['id']);
+                return ['code'=>1,'msg'=>'成功！'];
+            } else {
+                return ['code'=>0,'msg'=>'失败！'];
+            }
+        } else {
+            return ['code'=>0,'msg'=>'此订单已完成'];
+        }
+    }
+    
 }

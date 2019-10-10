@@ -429,6 +429,9 @@ class Helper extends Common{
             case 'iscahs':
                 $act = '审核打款';
                 break;
+            case 'lose':
+                $act = '订单失效';
+                break;
         }
         $remark = $act.$module['title'].'编号：'.$ids;
         $ins_data = array();

@@ -348,7 +348,7 @@ class Userinfo extends Common {
         
         switch ($type) {
             case "all":
-                $condition = " 1=1 ";
+                $condition = " 1=1 and status!=0";
                 break;
             case "send":
                 $condition = " status=1 ";

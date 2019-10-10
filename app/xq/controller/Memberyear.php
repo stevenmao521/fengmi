@@ -150,16 +150,20 @@ class Memberyear extends Common{
                 return mz_apierror("请选择日期");
             }
             
+            $url = "http://".$host."/bee/Year/done";
+            $params = array("start"=>$start, "end"=>$end);
+            $res_json = mz_http_send($url, $params, "POST");
+            $res = json_decode($res_json,1);
+            if (count($res)<1) {
+                return mz_apierror("没有数据，生成失败。");
+            }
+            
             $ins_data = array();
             $ins_data['name'] = $start."至".$end."年终奖发放单";
             $ins_data['start'] = $start;
             $ins_data['end'] = $end;
             $ins_data['createtime'] = time();
             $oid = $year_order_model->insertGetId($ins_data);
-            
-            $url = "http://".$host."/bee/Year/done";
-            $params = array("start"=>$start, "end"=>$end);
-            $res_json = mz_http_send($url, $params, "POST");
             
             if ($res_json) {
                 $res = json_decode($res_json,1);

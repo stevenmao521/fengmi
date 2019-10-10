@@ -24,7 +24,7 @@ class Common extends Controller{
         define('ACTION_NAME',strtolower($action));
         
         #用户登录检测
-        #session("userid", 12);
+        session("userid", 10010);
         #session("userid", null);
     }
     

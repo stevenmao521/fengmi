@@ -26,7 +26,7 @@
             <div class="swiper-container" id="head-swiper">
                 <div class="swiper-wrapper">
                     {volist name="ads_lamp" id="item"}
-                        <div class="swiper-slide"><a href="{:url('News/detail',array('id'=>$item['id']))}"><img src="__PUBLIC__/{$item.adpic}" /></a></div>
+                        <div class="swiper-slide"><a href="{$item.url}"><img src="__PUBLIC__/{$item.adpic}" /></a></div>
                     {/volist}
                 </div>
                 <!-- Add Pagination -->
@@ -35,7 +35,7 @@
         </div>
         <div class="home_ban">
             {volist name="ads_news" id="item"}
-                <li><a href="{:url('News/detail',array('id'=>$item['id']))}"><img src="__PUBLIC__/{$item.adpic}" /></a></li>
+                <li><a href="{$item.url}"><img src="__PUBLIC__/{$item.adpic}" /></a></li>
             {/volist}
         </div>
         <div class="h25"> </div>

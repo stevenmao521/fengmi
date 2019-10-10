@@ -2,18 +2,18 @@
 return [
     #微信小程序配置
     'wechat' => [
-        'wx_appid'=>'wx44cc19b5d035c357',
-        'wx_appsec'=>'894c0df9b5c73062328f83a846ca6117',
+        'wx_appid'=>'wx4fa2926f0aaf664d',
+        'wx_appsec'=>'c7f91f24b9e6cf87871703706757a14a',
         #微信登录凭证校验接口
         'wx_loginurl'=>'https://api.weixin.qq.com/sns/jscode2session'
     ],
     #微信支付配置
     'wxpay' => [
-        'mch_id'=>'1507466101',
+        'mch_id'=>'1557728541',
         #统一下单接口
         'pay_url'=>'https://api.mch.weixin.qq.com/pay/unifiedorder',
-        'api_sec'=>'Jcnetwork20140606Jcmap2018Jcpass',
-        'notify_url'=>'http://http://fmall.yuntim.cn/extend/wxpay/callback.php',
-        'after_url'=>'http://http://fmall.yuntim.cn/extend/wxpay/callafter.php'
+        'api_sec'=>'upLbeJav5CE8jEjh2oixGZrMiHHpaM4S',
+        'notify_url'=>'http://fmall.yuntim.cn/extend/wxpay/callback.php',
+        'after_url'=>'http://fmall.yuntim.cn/extend/wxpay/callafter.php'
     ]
 ];

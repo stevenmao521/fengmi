@@ -124,7 +124,6 @@ class Passport extends Common {
                 } else {
                     $parent['id'] = 0;
                 }
-                
                 $ins_data = array(
                     'nickname' => $nickname, 
                     'openid' => $openid, 
@@ -155,15 +154,34 @@ class Passport extends Common {
         $ispost = input("ispost");
         $phone = input("phone");
         $code = input("code");
+        $serviceid = input("serviceid");
         
         $uid = session("userid");
         if (!$uid) {
-            #$this->checklogin();
+            $this->checklogin();
         }
+        
+        #用户信息
+        $meminfo = $this->mem_model->where("id='{$uid}'")->find();
         
         if ($ispost) {
             $checkCode = $this->helper->checkCode($phone, $code, 1);
             if ($checkCode) {
+                #检查服务商ID
+                if (!$meminfo['parent_id']) {
+                    if (!$serviceid) {
+                        return mz_apierror("缺少服务商号码");
+                    }
+                    $parent = $this->mem_model->where("serviceid='{$serviceid}'")->find();
+                    if (!$parent) {
+                        return mz_apierror("服务商不存在");
+                    }
+                    $this->mem_model->where("id='{$meminfo['id']}'")->update(array(
+                        'parent_id'=>$parent['id'],
+                        'parent_service'=>$parent['serviceid']
+                    ));
+                }
+                
                 #绑定成功
                 $mem_info = $this->mem_model->where("id='{$uid}'")->find();
                 if ($mem_info['mobile']) {
@@ -180,6 +198,8 @@ class Passport extends Common {
                 return mz_apierror("验证码错误");
             }
         }
+        
+        $this->assign("meminfo", $mem_info);
         $this->assign("title", "微信登录-绑定手机号");
         return $this->fetch();
     }

@@ -394,7 +394,7 @@ class Mall extends Common {
         $product_info = $this->product_model->where("id='{$product_detail['product_id']}'")->find();
         $product_detail['pic'] = mz_pic($product_info['pics']);
 
-
+        
         $this->assign("order", $order_info);
         $this->assign("product_detail", $product_detail);
         $this->assign("title", "订单");
@@ -403,6 +403,7 @@ class Mall extends Common {
 
     #订单测试已付款
     public function orderpay() {
+        exit;
         $uid = session("userid");
         $this->checklogin();
         
@@ -444,7 +445,7 @@ class Mall extends Common {
         $uid = session("userid");
         #$this->checklogin();
         $id = input("id");
-        #$order = $this->order_model->where("id='{$id}'")->find();
+        $order = $this->order_model->where("id='{$id}'")->find();
         $mem = $this->mem_model->where("id='{$uid}'")->find();
         $fee = $order['total_price'] * 100;
         $fee = '0.01';

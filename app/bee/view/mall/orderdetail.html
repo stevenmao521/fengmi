@@ -56,12 +56,48 @@
         <div class="page-foot-btn dianbo">
             <p class="price"><span class="adorn">￥</span>{$order.total_price}</p>
             <p class="name">共<span class="num">{$order.total_nums}</span>件商品</p>
-            <a class="buy" href="javascript:;" onclick="pay_order({$order.id});">立即购买</a>
+            <!--<a class="buy" href="javascript:;" onclick="pay_order({$order.id});">立即购买</a>-->
+            <a class="buy" href="javascript:;" onclick="pay_orderwx({$order.id});">立即购买</a>
         </div>
     </div>
+    <div style="height:1.45rem"></div>
+    
 </body>
 <script src="__STATIC__/bee/js/jquery.min.js"></script>
 <script src="__STATIC__/bee/js/circleChart.min.js"></script>
+<script src="http://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script>
+<script>
+    $(document).ready(function(){ 
+        var jsurl = "http://fmall.yuntim.cn/bee/Mall/orderdetail";
+        $.ajax({
+            url:"{:url('Sign/getSignApi')}",
+            type:'post',
+            dataType:'json',
+            success:function(data){
+                if (data.code == 1) {
+                    //扫描设备二维码
+                    wx.config({
+                        debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                        appId: data.data.appId, // 必填，公众号的唯一标识
+                        timestamp: data.data.timestamp, // 必填，生成签名的时间戳
+                        nonceStr: data.data.nonceStr, // 必填，生成签名的随机串
+                        signature: data.data.signature,// 必填，签名
+                        jsApiList: [
+                           // 所有要调用的 API 都要加到这个列表中
+                           'chooseWXPay',
+                        ] // 必填，需要使用的JS接口列表
+                    });
+                    wx.error(function (res) {
+                        alert("调用微信jsapi返回的状态:" + res.errMsg);
+                    });
+                } else {
+                    
+                }
+            }
+        });
+    });
+</script>
+
 <script>
     let size = $(".left-icon").width()
     $(".left-icon").circleChart({
@@ -98,6 +134,7 @@
     function pay_order(id) {
         $.ajax({
             url:"{:url('Mall/orderpay')}",
+            //url:"{:url('Mall/orderpaywx')}",
             type:'post',
             dataType:'json',
             data:{id:id},
@@ -111,5 +148,35 @@
             }
         });
     }
+    
+    //微信支付
+    function pay_orderwx(id) {
+        $.ajax({
+            url:"{:url('Mall/orderpaywx')}",
+            type:'post',
+            dataType:'json',
+            data:{id:id},
+            success:function(data){
+                console.log(data);
+                if (data.code == 1) {
+                    //跳转订单详情页
+                    wx.chooseWXPay({
+                        timestamp: data.data.timeStamp, // 支付签名时间戳，注意微信jssdk中的所有使用timestamp字段均为小写。但最新版的支付后台生成签名使用的timeStamp字段名需大写其中的S字符
+                        nonceStr: data.data.nonceStr, // 支付签名随机串，不长于 32 位
+                        package: data.data.package, // 统一支付接口返回的prepay_id参数值，提交格式如：prepay_id=\*\*\*）
+                        signType: data.data.signType, // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
+                        paySign: data.data.paySign, // 支付签名
+                        success: function (res) {
+                            // 支付成功后的回调函数
+                            location.href = "{:url('Userinfo/myorder')}";
+                        }
+                    });
+                } else {
+                    alert(data.msg);
+                }
+            }
+        });
+    }
+    
 </script>
 </html>

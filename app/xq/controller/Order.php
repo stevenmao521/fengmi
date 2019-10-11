@@ -52,6 +52,8 @@ class Order extends Common{
         #筛选字段
         $post = input("request.");
         $parentid = $post['id'];
+        $ispost = input("ispost");
+        $ispost2 = input("ispost2");
         
         #列表
         $page =input('page')?input('page'):1;
@@ -67,8 +69,6 @@ class Order extends Common{
             $list['data'][$k]['pic'] = mz_pic($product['pics']);
         }
         
-        
-
         #时间转换
         $lfields = $this->lfields;
         if ($lfields) {
@@ -79,6 +79,44 @@ class Order extends Common{
                 }
             }
         }
+        
+        if ($ispost) {
+            $update = array();
+            $update['addrname'] = input("addrname");
+            $update['addrmobile'] = input("addrmobile");
+            $update['addrdetail'] = input("addrdetail");
+            $update['express'] = input("express");
+            $update['expresscode'] = input("expresscode");
+            $res = db("order")->where("id='{$parentid}'")->update($update);
+            if ($res) {
+                return mz_apisuc("修改成功");
+            } else {
+                return mz_apisuc("修改失败");
+            }
+        }
+        
+        if ($ispost2) {
+            $update = array();
+            $update['remark'] = input("remark");
+            $res = db("order")->where("id='{$parentid}'")->update($update);
+            if ($res) {
+                return mz_apisuc("修改成功");
+            } else {
+                return mz_apisuc("修改失败");
+            }
+        }
+        
+        $orderinfo = db("order")->where("id='{$parentid}'")->find();
+        $orderinfo['status'] = mz_getstatus($orderinfo['status']);
+        $orderinfo['createdate'] = date("Y-m-d H:i", $orderinfo['createtime']);
+        $orderinfo['paydate'] = $orderinfo['paytime'] ? date("Y-m-d H:i", $orderinfo['paytime']) : '';
+        $orderinfo['senddate'] = $orderinfo['sendtime'] ? date("Y-m-d H:i", $orderinfo['sendtime']) : '';
+        $orderinfo['finishdate'] = $orderinfo['finishtime'] ? date("Y-m-d H:i", $orderinfo['finishtime']) : '';
+        
+        $member = db("members")->where("id='{$orderinfo['uid']}'")->find();
+        
+        $this->assign("member", $member);
+        $this->assign("order", $orderinfo);
         $this->assign("id", $parentid);
         $this->assign("list", $list);
         return $this->fetch();
@@ -137,6 +175,31 @@ class Order extends Common{
         } else {
             return ['code'=>0,'msg'=>'此订单已完成'];
         }
+    }
+    
+    #打印发货单
+    public function dayin() {
+        $id = input("id");
+        $uid = session('aid');
+        $orderinfo = db("order")->where("id='{$id}'")->find();
+        $admininfo = db("admin")->where("admin_id='{$uid}'")->find();
+        
+        $addressinfo = db("address")->where("id='{$orderinfo['addressid']}'")->find();
+        $addr = explode(" ", $addressinfo['pro_city_reg']);
+        $addressinfo['pro'] = $addr[0];
+        $addressinfo['city'] = $addr[1];
+        $addressinfo['area'] = $addr[2];
+        
+        $orderdetail = db("orderdetail")->where("oid='{$orderinfo['id']}'")->find();
+        $product_name = db("product")->where("id='{$orderdetail['product_id']}'")->column("name");
+        $product_name = $product_name[0];
+        
+        $this->assign("name", $product_name);
+        $this->assign("orderdetail", $orderdetail);
+        $this->assign("addr", $addressinfo);
+        $this->assign("admin", $admininfo);
+        $this->assign("order", $orderinfo);
+        return $this->fetch();
     }
     
 }

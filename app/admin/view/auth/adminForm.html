@@ -56,6 +56,32 @@
         </div>
         -->
         <div class="layui-form-item">
+            <label class="layui-form-label">发件人</label>
+            <div class="layui-input-4">
+                <input type="text" name="addrname" ng-model="field.addrname" lay-verify="" value="" placeholder="" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">发件人手机</label>
+            <div class="layui-input-4">
+                <input type="text" name="addrmobile" ng-model="field.addrmobile" lay-verify="" value="" placeholder="" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">省市区</label>
+            <div class="layui-input-2">
+                <input type="text" name="province" ng-model="field.province" lay-verify="" value="" placeholder="省份" class="layui-input">
+                <input type="text" name="city" ng-model="field.city" lay-verify="" value="" placeholder="城市" class="layui-input">
+                <input type="text" name="area" ng-model="field.area" lay-verify="" value="" placeholder="区县" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">发件地址</label>
+            <div class="layui-input-4">
+                <input type="text" name="addrdetail" ng-model="field.addrdetail" lay-verify="" value="" placeholder="" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
             <div class="layui-input-block">
                 <button type="button" class="layui-btn" lay-submit="" lay-filter="submit">{:lang('submit')}</button>
                 <a href="{:url('adminList')}" class="layui-btn layui-btn-primary">{:lang('back')}</a>

@@ -1139,6 +1139,9 @@ function mz_getstatus($status) {
         case 1:
             return "待发货";
             break;
+        case 2:
+            return "已失效";
+            break;
         case 3:
             return "已发货";
             break;

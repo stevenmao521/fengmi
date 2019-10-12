@@ -64,8 +64,24 @@ class Members extends Common{
                 return mz_apierror("服务商不存在");
             }
             
-            $up['parent_id'] = $service['id'];
-            $up['serviceid'] = input("serviceid");
+            if (($mem_info['parent_id'] && $mem_info['parent_id'] != $service['id']) || !$mem_info['parent_id']) {
+                $up['parent_id'] = $service['id'];
+                $up['parent_service'] = $service["serviceid"];
+                
+                #memship
+                $ship = db("membership")->where("uid='{$id}'")->find();
+                if ($ship) {
+                    db("membership")->where("uid='{$id}'")->update(array("parentid"=>$service['id']));
+                } else {
+                    db("membership")->insert(array(
+                        "uid"=>$id,
+                        "parentid"=>$service['id'],
+                        "rank"=>0,
+                        "createtime"=>time(),
+                    ));
+                }
+            }
+            
             $up['nickname'] = input("nickname");
             $up['mobile'] = input("mobile");
             $up['realname'] = input("realname");
@@ -166,8 +182,23 @@ class Members extends Common{
                 return mz_apierror("服务商不存在");
             }
             
-            $up['parent_id'] = $service['id'];
-            $up['serviceid'] = input("serviceid");
+            if (($mem_info['parent_id'] && $mem_info['parent_id'] != $service['id']) || !$mem_info['parent_id']) {
+                $up['parent_id'] = $service['id'];
+                $up['parent_service'] = $service["serviceid"];
+                
+                #memship
+                $ship = db("membership")->where("uid='{$id}'")->find();
+                if ($ship) {
+                    db("membership")->where("uid='{$id}'")->update(array("parentid"=>$service['id']));
+                } else {
+                    db("membership")->insert(array(
+                        "uid"=>$id,
+                        "parentid"=>$service['id'],
+                        "rank"=>0,
+                        "createtime"=>time(),
+                    ));
+                }
+            }
             $up['nickname'] = input("nickname");
             $up['mobile'] = input("mobile");
             $up['realname'] = input("realname");

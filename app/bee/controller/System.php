@@ -530,6 +530,14 @@ class System extends Common {
         #当前用户等级1
         $this->mem_model->where("id='{$uid}'")->update(["level"=>1]);
         
+        #清理订单
+        $this->order_model->where("id>0")->delete();
+        $this->orderdetail_model->where("id>0")->delete();
+        
+        #年终奖单
+        db("yearorder")->where("id>0")->delete();
+        db("yearorderdetail")->where("id>0")->delete();
+        
         #升级日志
         $levellog = $this->levellog_model->where("uid>0")->delete();
         return mz_apierror("清空测试成功");

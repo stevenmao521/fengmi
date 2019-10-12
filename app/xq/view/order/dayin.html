@@ -24,14 +24,14 @@
             -->
         </style>
     </head>
-
+    <!--startprint-->
     <body>
         <div class="dayin">
             <div class="cont">
                 <div class="a1 fl">
                     <div class="name fl">{$admin.addrname}</div>
-                    <div class="add_cf fl"></div>
-                    <div class="danwei ft"></div>
+                    <div class="add_cf fl">{$admin.province}</div>
+                    <div class="danwei ft">&nbsp;</div>
                     <div class="add_ssq"><span>{$admin.province}</span><span>{$admin.city}</span><span>{$admin.area}</span></div>
                     <div class="add_xx ft">{$admin.addrdetail}</div>
                     <div class="tel ft">{$admin.mobile}</div>
@@ -39,7 +39,7 @@
                 </div>
                 <div class="a1 fl">
                     <div class="name fl">{$order.addrname}</div>
-                    <div class="add_cf fl"></div>
+                    <div class="add_cf fl">{$admin.province}</div>
                     <div class="danwei ft">{$order.express}</div>
                     <div class="add_ssq"><span>{$addr.pro}</span><span>{$addr.city}</span><span>{$addr.area}</span></div>
                     <div class="add_xx ft">{$order.addrdetail}</div>
@@ -47,7 +47,19 @@
                 </div>
             </div>
         </div>
-        <div class="btn"><input type="button" value="打印" />
+        <div class="btn"><input type="button" value="打印" onclick="doPrint();"/>
         </div>
     </body>
+    <!--endprint-->
 </html>
+
+<script>
+    function doPrint() {
+        var sprnhtml=window.document.body.innerHTML;;   //选择要打印的内容
+        var selfhtml=window.document.body.innerHTML;; 
+        window.document.body.innerHTML = sprnhtml;
+        window.print();
+        window.document.body.innerHTML = selfhtml;
+
+    }
+</script>

@@ -47,4 +47,215 @@ class Members extends Common{
         $this->assign('modname', $this->modname);
     }
     
+    #详细
+    public function infos() {
+        $id = input("request.id");
+        $ispost = input("ispost");
+        
+        $mem_info = db("members")->where("id='{$id}'")->find();
+        $mem_info['level'] = mz_gettype($mem_info['level']);
+        
+        if ($ispost) {
+            $up = array();
+            $serviceid = input("serviceid");;
+            $service = db("members")->where("serviceid='{$serviceid}' and id != '{$id}'")->find();
+            
+            if (!$service) {
+                return mz_apierror("服务商不存在");
+            }
+            
+            $up['parent_id'] = $service['id'];
+            $up['serviceid'] = input("serviceid");
+            $up['nickname'] = input("nickname");
+            $up['mobile'] = input("mobile");
+            $up['realname'] = input("realname");
+            $up['bankcode'] = input("bankcode");
+            $up['bankname'] = input("bankname");
+            $res = db("members")->where("id='{$id}'")->update($up);
+            if ($res) {
+                return mz_apisuc("修改成功");
+            } else {
+                return mz_apierror("修改失败");
+            }
+        }
+        
+        $this->assign("mem", $mem_info);
+        $this->assign("id", $id);
+        return $this->fetch();
+    }
+    
+    public function child()
+    {
+        $parentid = input("parentid");
+        if (request()->isPost()) {
+            #筛选字段
+            $post = input("post.");
+            $sel_map = $this->helper->getMap($post, $this->moduleid);
+
+            #列表
+            $page = input('page') ? input('page') : 1;
+            $pageSize = input('limit') ? input('limit') : config('pageSize');
+
+            $list = $this->dao
+                    ->where($sel_map)
+                    ->where("istrash=0 and parent_id='{$parentid}'")
+                    ->order('id desc')
+                    ->paginate(array('list_rows' => $pageSize, 'page' => $page))
+                    ->toArray();
+
+            #时间转换
+            $lfields = $this->lfields;
+            if ($lfields) {
+                foreach ($lfields as $k => $v) {
+                    if ($v['type'] == 'datetime') {
+                        $list['data'] = mz_formattime($list['data'], $v['field'], 1);
+                    }
+                }
+            }
+
+            #统计项 获取统计字段
+            $count = $this->helper->getCountField($this->moduleid);
+            if ($count['fields']) {
+                $sum = array();
+                foreach ($count['fields'] as $k => $v) {
+                    $sum_total = $this->dao
+                            ->where($sel_map)
+                            ->sum($v['field']);
+                    $sum[$v['field']] = $sum_total;
+                }
+            }
+            return $result = ['code' => 0, 'msg' => '获取成功!', 'data' => $list['data'], 'count' => $list['total'], 'rel' => 1, 'sum' => $sum];
+        }
+        #列表字段
+        $list_str = $this->helper->getlistField($this->moduleid);
+        #筛选html
+        $sel_html = $this->helper->getSelField($this->moduleid);
+        #获取统计字段
+        $count = $this->helper->getCountField($this->moduleid);
+
+        #模版渲染
+        return $this->fetch('', [
+            'parentid'=>$parentid,
+            'js_str' => $list_str['js_str'],
+            'js_tmp' => $list_str['js_tmp'],
+            'html_str' => $sel_html['html_str'],
+            'js_val' => $sel_html['js_val'],
+            'js_where' => $sel_html['js_where'],
+            'js_date' => $sel_html['js_date'],
+            'count_html1' => $count['html_1'],
+            'count_html2' => $count['html_2'],
+            'count_js' => $count['js'],
+            'js_ewhere' => $sel_html['js_ewhere']
+        ]);
+    }
+    
+    #详细
+    public function childinfo() {
+        $id = input("request.id");
+        $ispost = input("ispost");
+        
+        $mem_info = db("members")->where("id='{$id}'")->find();
+        $mem_info['level'] = mz_gettype($mem_info['level']);
+        
+        if ($ispost) {
+            $up = array();
+            $serviceid = input("serviceid");;
+            $service = db("members")->where("serviceid='{$serviceid}' and id != '{$id}'")->find();
+            
+            if (!$service) {
+                return mz_apierror("服务商不存在");
+            }
+            
+            $up['parent_id'] = $service['id'];
+            $up['serviceid'] = input("serviceid");
+            $up['nickname'] = input("nickname");
+            $up['mobile'] = input("mobile");
+            $up['realname'] = input("realname");
+            $up['bankcode'] = input("bankcode");
+            $up['bankname'] = input("bankname");
+            $res = db("members")->where("id='{$id}'")->update($up);
+            if ($res) {
+                return mz_apisuc("修改成功");
+            } else {
+                return mz_apierror("修改失败");
+            }
+        }
+        
+        $this->assign("mem", $mem_info);
+        $this->assign("id", $id);
+        return $this->fetch();
+    }
+    
+    #收支明细
+    public function flow()
+    {
+        $id = input("id");
+        $parentid = input("parentid");
+        $this->dao = db('memberflow');
+        $this->moduleid = 13;
+        
+        if (request()->isPost()) {
+            #筛选字段
+            $post = input("post.");
+            $sel_map = $this->helper->getMap($post, $this->moduleid);
+
+            #列表
+            $page = input('page') ? input('page') : 1;
+            $pageSize = input('limit') ? input('limit') : config('pageSize');
+
+            $list = $this->dao
+                    ->where($sel_map)
+                    ->where("istrash=0 and uid='{$id}'")
+                    ->order('id desc')
+                    ->paginate(array('list_rows' => $pageSize, 'page' => $page))
+                    ->toArray();
+
+            #时间转换
+            $this->lfields = $this->helper->getLfield($this->moduleid);#列表字段
+            $lfields = $this->lfields;
+            if ($lfields) {
+                foreach ($lfields as $k => $v) {
+                    if ($v['type'] == 'datetime') {
+                        $list['data'] = mz_formattime($list['data'], $v['field'], 1);
+                    }
+                }
+            }
+
+            #统计项 获取统计字段
+            $count = $this->helper->getCountField($this->moduleid);
+            if ($count['fields']) {
+                $sum = array();
+                foreach ($count['fields'] as $k => $v) {
+                    $sum_total = $this->dao
+                            ->where($sel_map)
+                            ->sum($v['field']);
+                    $sum[$v['field']] = $sum_total;
+                }
+            }
+            return $result = ['code' => 0, 'msg' => '获取成功!', 'data' => $list['data'], 'count' => $list['total'], 'rel' => 1, 'sum' => $sum];
+        }
+        #列表字段
+        $list_str = $this->helper->getlistField($this->moduleid);
+        #筛选html
+        $sel_html = $this->helper->getSelField($this->moduleid);
+        #获取统计字段
+        $count = $this->helper->getCountField($this->moduleid);
+
+        #模版渲染
+        return $this->fetch('', [
+            'id'=>$id,
+            'parentid'=>$parentid,
+            'js_str' => $list_str['js_str'],
+            'js_tmp' => $list_str['js_tmp'],
+            'html_str' => $sel_html['html_str'],
+            'js_val' => $sel_html['js_val'],
+            'js_where' => $sel_html['js_where'],
+            'js_date' => $sel_html['js_date'],
+            'count_html1' => $count['html_1'],
+            'count_html2' => $count['html_2'],
+            'count_js' => $count['js'],
+            'js_ewhere' => $sel_html['js_ewhere']
+        ]);
+    }
+    
 }

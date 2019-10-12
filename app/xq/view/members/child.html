@@ -2,51 +2,20 @@
 <div class="admin-main layui-anim layui-anim-upbit">
     <div class="layui-tab layui-tab-brief" lay-filter="docDemoTabBrief">
         <ul class="layui-tab-title">
-            <li class="layui-this"><a href='{:url("index")}'>{:lang('list')}</a></li>
-            <li><a href='{:url("log")}'>{:lang('loglist')}</a></li>
-            <li><a href='{:url("trash")}'>{:lang('trash')}</a></li>
+            <li class=""><a href="{:url('Members/index')}">用户列表</a></li>
+            <li ><a href="{:url('Members/infos')}?id={$parentid}">详情</a></li>
+            <li class="layui-this"><a href="{:url('Members/child')}?parentid={$parentid}">下级团队</a></li>
         </ul>
     </div>
     
-    <!-- 筛选列表 -->
-    <div class="demoTable layui-form">
-        <div class="layui-form-item" id="search_box" >
-            {$html_str}
-        </div>
-        <blockquote class="layui-elem-quote">
-            <button type="button" class="layui-btn layui-btn-small layui-btn-danger" id="delAll">{:lang('delall')}</button>
-            <button type="button" class="layui-btn layui-btn-small layui-btn-primary" id="export">{:lang('export')}</button>
-            <a href="{:url('add')}" class="layui-btn layui-btn-small layui-bg-blue">{:lang('add')}</a>
-            <button class="layui-btn layui-btn-small" id="search" data-type="reload" style="float:right;">{:lang('search')}</button>
-            <a href="{:url('index')}" class="layui-btn layui-btn-small" style="float:right;">{:lang('clear')}</a>
-        </blockquote>
-    </div>
-    {if condition='$count_html1'}
-        <table class="layui-table" lay-size="sm">
-            <thead>
-                <tr>
-                    <th width="50">合计项</th>
-                    {$count_html1}
-                </tr> 
-            </thead>
-            <tbody>
-                <td>合计</td>
-                {$count_html2}
-            </tbody>
-        </table>
-    {/if}
     <!--列表-->
     <table class="layui-table" id="list" lay-filter="list">
     </table>
 </div>
 <!--action 操作-->
 <script type="text/html" id="action">
-    {if $olist}
-    <a class="layui-btn layui-btn-mini" lay-event="olist" >清单列表</a>
-    {/if}
-    <a href="{:url('infos')}?id={{d.id}}" class="layui-btn layui-btn-mini layui-bg-blue">详细</a>
+    <a class="layui-btn layui-btn-mini layui-bg-blue" lay-event="childinfo">详细</a>
     <a class="layui-btn layui-btn-mini layui-bg-warm" lay-event="flow">收支明细</a>
-    <a class="layui-btn layui-btn-danger layui-btn-mini" lay-event="del">{:lang('del')}</a>
 </script>
 <!--字段js模版-->
 {$js_tmp}
@@ -62,7 +31,7 @@
         var tableIn = table.render({
             id: 'user',
             elem: '#list',
-            url: '{:url("index")}',
+            url: '{:url("child")}?parentid={$parentid}',
             method: 'post',
             page: true,
             cols: [[
@@ -138,6 +107,23 @@
                       layer.closeAll();
                     }
                 });
+            } else if (obj.event === 'childinfo') {
+                var pid = data.id;
+                var type = pid;
+                layer.open({
+                    type: 2
+                    ,area: ['800px', '440px']
+                    ,offset: 'auto' 
+                    ,id: 'info'+type
+                    ,maxmin: true 
+                    ,content: '{:url("childinfo")}?id='+pid
+                    ,btn: '关闭'
+                    ,btnAlign: 'c' //按钮居中
+                    ,shade: 0 //不显示遮罩
+                    ,yes: function(){
+                      layer.closeAll();
+                    }
+                });
             }
         });
 
@@ -161,6 +147,7 @@
                 });
             });
         });
+        
     });
 </script>
 </body>

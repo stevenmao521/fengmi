@@ -101,7 +101,7 @@ class Mall extends Common {
         $product = $this->product_model->where("id='{$id}'")->find();
         $member = $this->mem_model->where("id='{$uid}'")->find();
 
-        $cart = $this->cart_model->where("uid='{$uid}' and product_id")->find();
+        $cart = $this->cart_model->where("uid='{$uid}' and product_id='{$product['id']}'")->find();
         if (!$cart) {
             $ins_data = array();
             $ins_data['product_id'] = $product['id'];
@@ -232,7 +232,7 @@ class Mall extends Common {
 
                     if ($res && $res_1 && $res_2) {
                         Db::commit();
-                        return mz_apisuccess("订单创建成功");
+                        return mz_apisuc("订单创建成功");
                     } else {
                         return mz_apierror("订单创建失败");
                     }

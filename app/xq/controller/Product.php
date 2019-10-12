@@ -47,6 +47,73 @@ class Product extends Common{
         $this->assign('modname', $this->modname);
     }
     
+    public function index()
+    {
+        if (request()->isPost()) {
+            #筛选字段
+            $post = input("post.");
+            $sel_map = $this->helper->getMap($post, $this->moduleid);
+
+            #列表
+            $page = input('page') ? input('page') : 1;
+            $pageSize = input('limit') ? input('limit') : config('pageSize');
+
+            $list = $this->dao
+                    ->where($sel_map)
+                    ->where("istrash=0")
+                    ->order('id desc')
+                    ->paginate(array('list_rows' => $pageSize, 'page' => $page))
+                    ->toArray();
+            
+            foreach ($list['data'] as $k=>$v) {
+                $list['data'][$k]['pics'] = mz_pic($v['pics']);
+            }
+
+            #时间转换
+            $lfields = $this->lfields;
+            if ($lfields) {
+                foreach ($lfields as $k => $v) {
+                    if ($v['type'] == 'datetime') {
+                        $list['data'] = mz_formattime($list['data'], $v['field'], 1);
+                    }
+                }
+            }
+
+            #统计项 获取统计字段
+            $count = $this->helper->getCountField($this->moduleid);
+            if ($count['fields']) {
+                $sum = array();
+                foreach ($count['fields'] as $k => $v) {
+                    $sum_total = $this->dao
+                            ->where($sel_map)
+                            ->sum($v['field']);
+                    $sum[$v['field']] = $sum_total;
+                }
+            }
+            return $result = ['code' => 0, 'msg' => '获取成功!', 'data' => $list['data'], 'count' => $list['total'], 'rel' => 1, 'sum' => $sum];
+        }
+        #列表字段
+        $list_str = $this->helper->getlistField($this->moduleid);
+        #筛选html
+        $sel_html = $this->helper->getSelField($this->moduleid);
+        #获取统计字段
+        $count = $this->helper->getCountField($this->moduleid);
+
+        #模版渲染
+        return $this->fetch('', [
+            'js_str' => $list_str['js_str'],
+            'js_tmp' => $list_str['js_tmp'],
+            'html_str' => $sel_html['html_str'],
+            'js_val' => $sel_html['js_val'],
+            'js_where' => $sel_html['js_where'],
+            'js_date' => $sel_html['js_date'],
+            'count_html1' => $count['html_1'],
+            'count_html2' => $count['html_2'],
+            'count_js' => $count['js'],
+            'js_ewhere' => $sel_html['js_ewhere']
+        ]);
+    }
+    
     //字段排序
     public function listOrder(){
         $model =db('productcate');

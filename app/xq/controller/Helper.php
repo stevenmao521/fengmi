@@ -244,6 +244,16 @@ class Helper extends Common{
                     $other = ", templet: '#{$v['field']}_tmp'";
                 }
             }
+            
+            if ($v['type'] == 'images') {
+                
+                $tmp .= "<script type='text/html' id='{$v['field']}_tmp'>";
+                $tmp .= "<img src='__PUBLIC__{{d.{$v['field']}}}' />";
+                
+                $tmp .= "</script>";
+                $other = ", templet: '#{$v['field']}_tmp'";
+                
+            }
             #原始
             $js_str .= "{field: '{$v['field']}', title: '{$v['name']}', width: {$v['width']} {$other}},";
         }

@@ -49,8 +49,8 @@ class Smscode extends Common{
         $has_send = $this->send_code($mobile, $type);
         if ($has_send) {
             #暂时屏蔽短信发送 返回验证码
-            return mz_apisuc("短信发送成功 验证码为：".$has_send);
-            #return mz_apisuc("短信发送成功");
+            #return mz_apisuc("短信发送成功 验证码为：".$has_send);
+            return mz_apisuc("短信发送成功");
             #return mz_apisuc("短信发送成功");
         } else {
             return mz_apierror("短信发送失败");
@@ -77,23 +77,26 @@ class Smscode extends Common{
         $mobile_code = mz_random(4,1);
         
         #短信接口
-        #$appid = 1400254722;
-        #$appkey = "723b9d61d89abc4a7e9f596116a08fc3";
-        #$singleSender = new SmsSingleSender($appid, $appkey);
+        $appid = 1400254722;
+        $appkey = "723b9d61d89abc4a7e9f596116a08fc3";
+        $singleSender = new SmsSingleSender($appid, $appkey);
 
         #普通单发
-        #$result = $singleSender->send(0, "86", $mobile, "您的验证码为:".$mobile_code, "", "");
-        #var_dump($result);exit;
-        #end
+        $result = $singleSender->send(0, "86", $mobile, "您的验证码是{$mobile_code}，请于1分钟内填写。如非本人操作，请忽略本短信。", "", "");
         
-        $data = array(
-            'type'=>$type,
-            'mobile'=>$mobile,
-            'createtime'=>time(),
-            'code'=>$mobile_code
-        );
-        $this->sms_model->insert($data);
-        return $mobile_code;
+        $res = json_decode($result,1);
+        if ($res['result'] == 0) {
+            $data = array(
+                'type'=>$type,
+                'mobile'=>$mobile,
+                'createtime'=>time(),
+                'code'=>$mobile_code
+            );
+            $this->sms_model->insert($data);
+            return $mobile_code;
+        } else {
+            return false;
+        }
     }
     
 }

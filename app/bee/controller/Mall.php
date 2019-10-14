@@ -480,17 +480,19 @@ class Mall extends Common {
                 $this->product_model->where("id='{$v['product_id']}'")->setInc("selnums", $v['nums']);
             }
             #更新用户等级
+            /*
             if ($member_info['level'] == 1) {
                 #进行升级，并记录日志
                 $ins_data = array();
                 $ins_data['uid'] = $uid;
-                $ins_data['direct_nums'] = 0;
+                $ins_data['direct_nums'] = 1;
                 $ins_data['indirect_nums'] = 0;
                 $ins_data['des'] = "达到 业务员 等级进行升级";
                 $ins_data['createtime'] = time();
                 $this->levellog_model->insert($ins_data);
                 $this->mem_model->where("id='{$uid}'")->update(array("level"=>2));
             }
+            */
             return mz_apisuc("支付成功");
         } else {
             return mz_apierror("支付失败");

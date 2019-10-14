@@ -97,18 +97,18 @@ class System extends Common {
         $order_detail = $this->orderdetail_model->where("oid='{$id}'")->select();
         
         #更新用户等级
-        $member_info = $this->mem_model->where("id='{$uid}'")->find();
-        if ($member_info['level'] == 1) {
-            #进行升级，并记录日志
-            $ins_data = array();
-            $ins_data['uid'] = $uid;
-            $ins_data['direct_nums'] = 0;
-            $ins_data['indirect_nums'] = 0;
-            $ins_data['des'] = "达到 业务员 等级进行升级";
-            $ins_data['createtime'] = time();
-            $this->levellog_model->insert($ins_data);
-            $this->mem_model->where("id='{$uid}'")->update(array("level"=>2));
-        }
+//        $member_info = $this->mem_model->where("id='{$uid}'")->find();
+//        if ($member_info['level'] == 1) {
+//            #进行升级，并记录日志
+//            $ins_data = array();
+//            $ins_data['uid'] = $uid;
+//            $ins_data['direct_nums'] = 0;
+//            $ins_data['indirect_nums'] = 0;
+//            $ins_data['des'] = "达到 业务员 等级进行升级";
+//            $ins_data['createtime'] = time();
+//            $this->levellog_model->insert($ins_data);
+//            $this->mem_model->where("id='{$uid}'")->update(array("level"=>2));
+//        }
         
         #业绩加成
         if ($order_detail) {
@@ -302,12 +302,15 @@ class System extends Common {
                 }
             } else {
                 #上面3位老师分别奖励10元
-                $uids = $this->recurrence($uid);
+                $uids = $this->recurrence_3($uid);
+                #print_r($uids);exit;
                 if ($uids) {
                     foreach ($uids as $k=>$v) {
                         if ($k<=2) {
                             $re_uid = $v;
-                            $money = 10;
+                            #瓶数
+                            $bottels = $orderdetail['bottles'];
+                            $money = 10 * $bottels;
                             $this->mem_model->where("id='{$re_uid}'")->setInc("balance", $money);
                             $this->mem_model->where("id='{$re_uid}'")->setInc("total_balance", $money);
                             $balance = $this->mem_model->where("id='{$re_uid}'")->column("balance");
@@ -327,23 +330,27 @@ class System extends Common {
         $month = date('m', time());
         $uids_link = array();
         #递归整个上级链
+        $uids_link[] = $uid; 
         $uids = $this->recurrence($uid, $uids_link);
-        
         if ($uids) {
             foreach ($uids as $k=>$v) {
                 $has_result = $this->memberresult_model->where("uid='{$v}' and year='{$year}' and month='{$month}'")->find();
                 if ($has_result) {
-                    if ($k == 0) {
+                    if ($k == 0 ) {
+                        $this->memberresult_model->where("id='{$has_result['id']}'")->setInc("direct_nums",$bottles);
+                    } elseif ($k == 1) {
                         $this->memberresult_model->where("id='{$has_result['id']}'")->setInc("direct_nums",$bottles);
                     } else {
                         $this->memberresult_model->where("id='{$has_result['id']}'")->setInc("redirect_nums",$bottles);
                     }
                     
                     #升级判断处理
-                    $this->dolevel($v);
+                    $level = $this->dolevel($v);
+                    
+                    $this->memberresult_model->where("id='{$has_result['id']}'")->update(array('level'=>$level));
                     
                 } else {
-                    if ($k == 0) {
+                    if ($k == 0 ) {
                         #直接上级 增加直销量
                         $ins_data = array();
                         $ins['uid'] = $v;
@@ -351,7 +358,15 @@ class System extends Common {
                         $ins['month'] = $month;
                         $ins['direct_nums'] = $bottles;
                         $ins['redirect_nums'] = 0;
-                    } else {
+                    } elseif ($k == 1) {
+                        #直接上级 增加直销量
+                        $ins_data = array();
+                        $ins['uid'] = $v;
+                        $ins['year'] = $year;
+                        $ins['month'] = $month;
+                        $ins['direct_nums'] = $bottles;
+                        $ins['redirect_nums'] = 0;
+                    }else {
                         #直接上级 增加直销量
                         $ins_data = array();
                         $ins['uid'] = $v;
@@ -360,10 +375,11 @@ class System extends Common {
                         $ins['direct_nums'] = 0;
                         $ins['redirect_nums'] = $bottles;
                     }
-                    $this->memberresult_model->insert($ins);
+                    $id = $this->memberresult_model->insertGetId($ins);
                     
                     #升级判断处理
-                    $this->dolevel($v);
+                    $level = $this->dolevel($v);
+                    $this->memberresult_model->where("id='{$id}'")->update(array('level'=>$level));
                 }
             }
         }
@@ -424,7 +440,13 @@ class System extends Common {
                 break;
         }
         
+//        echo $level;
+//        echo $member_info['level'];
+//        exit;
+//        
+        
         if ($level > $member_info['level']) {
+           
             #进行升级，并记录日志
             $ins_data = array();
             $ins_data['uid'] = $uid;
@@ -432,18 +454,32 @@ class System extends Common {
             $ins_data['indirect_nums'] = $redirect_nums;
             $ins_data['des'] = "达到 {$level_name} 等级进行升级";
             $ins_data['createtime'] = time();
+            
             $this->levellog_model->insert($ins_data);
             #更新用户等级
             $this->mem_model->where("id='{$uid}'")->update(array("level"=>$level));
-        }
+            return $level;
+        } 
+        return $member_info['level'];
     }
     
     #递归求链
     public function recurrence($uid, &$result=array()) {
         $uinfo = $this->membership_model->where("uid='{$uid}'")->find();
+        #本人
         if ($uinfo['parentid']) {
             $result[] = $uinfo['parentid'];
             $this->recurrence($uinfo['parentid'],$result);
+        }
+        return $result;
+    }
+    
+    #递归求链
+    public function recurrence_3($uid, &$result=array()) {
+        $uinfo = $this->membership_model->where("uid='{$uid}'")->find();
+        if ($uinfo['parentid']) {
+            $result[] = $uinfo['parentid'];
+            $this->recurrence_3($uinfo['parentid'],$result);
         }
         return $result;
     }

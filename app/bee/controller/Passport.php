@@ -129,7 +129,8 @@ class Passport extends Common {
                     'openid' => $openid, 
                     'avatarurl' => $headimg, 
                     'createtime' => time(),
-                    'parent_id' => $parent['id']
+                    'parent_id' => $parent['id'],
+                    'parent_service' => $parent['serviceid']
                 );
                 
                 $res = $this->mem_model->insertGetId($ins_data);
@@ -199,7 +200,7 @@ class Passport extends Common {
             }
         }
         
-        $this->assign("meminfo", $mem_info);
+        $this->assign("meminfo", $meminfo);
         $this->assign("title", "微信登录-绑定手机号");
         return $this->fetch();
     }

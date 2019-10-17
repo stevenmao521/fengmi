@@ -182,7 +182,7 @@ class Mall extends Common {
                         $order_data['addrmobile'] = $address['mobile'];
                         $order_data['addrdetail'] = $address['pro_city_reg'] . $address['detail'];
                     } else {
-                        return mz_apierror("请先添加收获地址");
+                        #return mz_apierror("请先添加收获地址");
                     }
                     $order_data['uid'] = $uid;
                     $order_data['createtime'] = time();
@@ -246,7 +246,7 @@ class Mall extends Common {
                         $order_data['addrmobile'] = $address['mobile'];
                         $order_data['addrdetail'] = $address['pro_city_reg'] . $address['detail'];
                     } else {
-                        return mz_apierror("请先添加收获地址");
+                        #return mz_apierror("请先添加收获地址");
                     }
                     $order_data['uid'] = $uid;
                     $order_data['createtime'] = time();
@@ -330,7 +330,7 @@ class Mall extends Common {
                 $order_data['addrmobile'] = $address['mobile'];
                 $order_data['addrdetail'] = $address['pro_city_reg'] . $address['detail'];
             } else {
-                return mz_apierror("请先添加收获地址");
+                #return mz_apierror("请先添加收获地址");
             }
             $order_data['uid'] = $uid;
             $order_data['createtime'] = time();
@@ -342,7 +342,6 @@ class Mall extends Common {
             $total_price = 0;
             $total_nums = 0;
 
-            
             $product_info = Db::name('Product')->where("id='{$product_id}'")->find();
             if ($product_info) {
                 if ($member['level'] == 1) {
@@ -393,8 +392,10 @@ class Mall extends Common {
         $product_detail = $this->order_detail_model->where("oid='{$order_info['id']}'")->find();
         $product_info = $this->product_model->where("id='{$product_detail['product_id']}'")->find();
         $product_detail['pic'] = mz_pic($product_info['pics']);
-
         
+        $address_info = $this->address_model->where("uid='{$uid}'")->find();
+
+        $this->assign("addressinfo", $address_info);
         $this->assign("order", $order_info);
         $this->assign("product_detail", $product_detail);
         $this->assign("title", "订单");
@@ -446,6 +447,12 @@ class Mall extends Common {
         #$this->checklogin();
         $id = input("id");
         $order = $this->order_model->where("id='{$id}'")->find();
+        
+        #是否添加收获地址
+        if (!$order['addressid']) {
+            return mz_apierror("请添加收获地址");
+        }
+        
         $mem = $this->mem_model->where("id='{$uid}'")->find();
         $fee = $order['total_price'] * 100;
         $fee = '0.01';
@@ -480,7 +487,7 @@ class Mall extends Common {
                 $this->product_model->where("id='{$v['product_id']}'")->setInc("selnums", $v['nums']);
             }
             #更新用户等级
-            /*
+            
             if ($member_info['level'] == 1) {
                 #进行升级，并记录日志
                 $ins_data = array();
@@ -492,11 +499,89 @@ class Mall extends Common {
                 $this->levellog_model->insert($ins_data);
                 $this->mem_model->where("id='{$uid}'")->update(array("level"=>2));
             }
-            */
+            
             return mz_apisuc("支付成功");
         } else {
             return mz_apierror("支付失败");
         }
+    }
+    
+    #添加地址
+    public function addressadd() {
+        $uid = session("userid");
+        $ispost = input("ispost");
+        $uname = input("uname");
+        $mobile = input("mobile");
+        $pro_city_reg = input("pro_city_reg");
+        $detail = input("detail");
+        $isdef = input("isdef");
+        $id = input("id");
+        
+        if ($ispost) {
+            $ins_data = array();
+            $ins_data = [
+                "uid"=>$uid,
+                "uname"=>$uname,
+                "mobile"=>$mobile,
+                "pro_city_reg"=>$pro_city_reg,
+                "detail"=>$detail,
+                "isdef"=>$isdef,
+                "createtime"=>time()
+            ];
+            if ($isdef == 1) {
+                $this->address_model->where("uid='{$uid}'")->update(["isdef"=>0]);
+            }
+            $res = $this->address_model->insertGetId($ins_data);
+            if ($res) {
+                $address = $this->address_model->where("id='{$res}'")->find();
+                
+                #为此订单赋值
+                $order_data = array();
+                $order_data['addressid'] = $address['id'];
+                $order_data['addrname'] = $address['uname'];
+                $order_data['addrmobile'] = $address['mobile'];
+                $order_data['addrdetail'] = $address['pro_city_reg'] . $address['detail'];
+                $this->order_model->where("id='{$id}'")->update($order_data);
+                return mz_apisuc("添加成功");
+            } else {
+                return mz_apierror("添加失败");
+            }
+        }
+        
+        $this->assign("id", $id);
+        $this->assign("title", "添加收货地址");
+        return $this->fetch();
+    }
+    
+    #我的收获地址
+    public function addresslist() {
+        $uid = session("userid");
+        $id = input("id");
+        $mem_info = $this->mem_model->where("id='{$uid}'")->find();
+        $address_list = $this->address_model->where("uid='{$uid}'")->select();
+        
+        $this->assign("id", $id);
+        $this->assign("list", $address_list);
+        $this->assign("info", $mem_info);
+        $this->assign("title", "我的收获地址");
+        return $this->fetch();
+    }
+    
+    public function chooseaddr() {
+        $uid = session("userid");
+        $id = input("id");
+        $oid = input("oid");
+        
+        
+        $address = $this->address_model->where("id='{$id}'")->find();
+        #为此订单赋值
+        $order_data = array();
+        $order_data['addressid'] = $address['id'];
+        $order_data['addrname'] = $address['uname'];
+        $order_data['addrmobile'] = $address['mobile'];
+        $order_data['addrdetail'] = $address['pro_city_reg'] . $address['detail'];
+        $r = $this->order_model->where("id='{$oid}'")->update($order_data);
+        return mz_apisuc("添加成功");
     }
 
 }

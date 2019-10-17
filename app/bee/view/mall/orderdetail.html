@@ -29,14 +29,22 @@
         </div>
         <div class="tips_h25"></div>
         <div class="content-warp">
+            
+            
             <div class="goods-address">
+                {if condition="$addressinfo"}
+                    <a class="address-infor arrow" href="{:url('Mall/addresslist')}?id={$order.id}">
+                {else/}
+                    <a class="address-infor arrow" href="{:url('Mall/addressadd')}?id={$order.id}">
+                {/if}
+                
                 <h1 class="address-title">收货地址</h1>
-                <a class="address-infor arrow" href="javascript:;">
-                    <h3 class="address-user"><span class="name">{$order.addrname}</span> <span class="tel">{$order.addrmobile}</span></h3>
-                    <p class="address-detail">{$order.addrdetail}</p>
-                    <img class="arrow_img" src="__STATIC__/bee/img/img37.png" />
+                <h3 class="address-user"><span class="name">{$order.addrname}</span> <span class="tel">{$order.addrmobile}</span></h3>
+                <p class="address-detail">{$order.addrdetail}</p>
+                <img class="arrow_img" src="__STATIC__/bee/img/img37.png" />
                 </a>
             </div>
+           
         </div>
         <div class="tips_h25"></div>
 

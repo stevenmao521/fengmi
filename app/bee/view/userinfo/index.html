@@ -8,6 +8,7 @@
     <meta http-equiv="Cache" content="no-cache">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>{$title}</title>
+    <link href="__STATIC__/bee/css/zl.css?v1" rel="stylesheet" />
     <link href="__STATIC__/bee/css/main.css?v1" rel="stylesheet" />
     <link href="__STATIC__/bee/css/index.css?v1" rel="stylesheet" />
     <link href="__STATIC__/bee/css/user.css?v1" rel="stylesheet" />
@@ -54,9 +55,13 @@
 
         <div class="list-box">
             <div class="list">
+                
+                {if condition="$info.level gt 1"}
                 <a href="{:url('Userinfo/myshare')}">
                     <div class="box2 "><img class="icon" src="__STATIC__/bee/img/img25.png" />我的推广方式<img class="arrow_img" src="__STATIC__/bee/img/img37.png" /></div>
                 </a>
+                {/if}
+                
                 {if condition="$info.parent_id gt 0"}
                 <a href="{:url('Userinfo/myservice')}">
                 {else/}
@@ -75,6 +80,9 @@
                 </a>
             </div>
         </div>
+        
+        <div style="height:1.45rem"></div>
+        {include file="common/footucenter"/}
         
     </div>
 </body>

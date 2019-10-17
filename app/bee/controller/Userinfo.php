@@ -24,6 +24,7 @@ class Userinfo extends Common {
     protected $product_model;
     protected $flow_model;
     protected $cash_order;
+    protected $memresult_model;
 
     public function _initialize() {
         
@@ -40,6 +41,7 @@ class Userinfo extends Common {
         $this->product_model = model("Product");
         $this->flow_model = model("Memberflow");
         $this->cash_order = model("Cashorder");
+        $this->memresult_model = model("Memberresult");
     }
     
     public function index() {
@@ -323,6 +325,14 @@ class Userinfo extends Common {
             }
         }
         
+        $dir = $this->memresult_model->where("uid='{$uid}'")->sum("direct_nums");
+        $rdir = $this->memresult_model->where("uid='{$uid}'")->sum("redirect_nums");
+        $all = $dir + $rdir;
+        if ($all) {
+            $all = 0;
+        }
+        
+        $this->assign("all", $all);
         $this->assign("level1", $child_level1);
         $this->assign("level2", $child_level2);
         $this->assign("level3", $child_level3);
@@ -443,8 +453,10 @@ class Userinfo extends Common {
                 if (substr($v['money'],0,1) == "-") {
                     $flow[$k]['money'] = substr($v['money'], 1);
                     $flow[$k]['moneytype'] = 1;
-                } else {
+                } elseif(substr($v['money'],0,1) == "+") {
                     $flow[$k]['money'] = substr($v['money'], 1);
+                    $flow[$k]['moneytype'] = 2;
+                } else {
                     $flow[$k]['moneytype'] = 2;
                 }
             }
@@ -468,12 +480,16 @@ class Userinfo extends Common {
         
         $uinfo = $this->mem_model->where("id='{$uid}'")->find();
         if (!$uinfo['realname'] || !$uinfo['bankcode'] || !$uinfo['bankname']) {
-            return mz_apierror("请到个人中心完善银行卡信息");
+            $result = array();
+            $result['code'] = 2;
+            $result['msg'] = "请到个人中心完善银行卡信息";
+            return json($result);
+            exit;
         }
         if (!preg_match("/^[1-9][0-9]*$/", $money)) {
             return mz_apierror("金额输入不正确");
         }
-        if ($money%100 != 0) {
+        if ($money%50 != 0) {
             return mz_apierror("取现金额只能是100的整数");
         }
         #用户余额

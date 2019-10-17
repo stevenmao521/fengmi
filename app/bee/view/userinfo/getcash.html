@@ -41,7 +41,7 @@
                 <h1 class="declare-title">说明</h1>
                 <div class="declare-list">
                     <p class="declare-text">1. 提现金额不能大于个人账户中的可提现金额；</p>
-                    <p class="declare-text">2. 提现金额只能是100的倍数；</p>
+                    <p class="declare-text">2. 提现金额只能是50的倍数；</p>
                     <p class="declare-text">3. 请在个人资料中绑定银行卡；</p>
                     <p class="declare-text">4. 提现申请将在24小时内审核。如有疑问，请致电：023-68686868</p>
                 </div>
@@ -53,31 +53,36 @@
 <script>
     
     function getcash() {
-        var money = $('#money').val();
-        if (checkInt(money) == false) {
-            alert("金额输入不正确");
-            return false;
-        }
-        if (money % 100 != 0) {
-            alert("取现金额只能是100的整数");
-            return false;
-        }
-        
-        //提现
-        $.ajax({
-            url:"{:url('userinfo/checkcash')}",
-            type:'post',
-            dataType:'json',
-            data:{money:money},
-            success:function(data){
-                if (data.code == 1) {
-                    alert(data.msg);
-                    location.href = "{:url('userinfo/mywallet',array('type'=>2))}";
-                } else {
-                    alert(data.msg);
-                }
+        if(confirm('是否确定提现申请')==true){
+            var money = $('#money').val();
+            if (checkInt(money) == false) {
+                alert("金额输入不正确");
+                return false;
             }
-        });
+            if (money % 50 != 0) {
+                alert("取现金额只能是50的整数");
+                return false;
+            }
+
+            //提现
+            $.ajax({
+                url:"{:url('userinfo/checkcash')}",
+                type:'post',
+                dataType:'json',
+                data:{money:money},
+                success:function(data){
+                    if (data.code == 1) {
+                        alert(data.msg);
+                        location.href = "{:url('userinfo/mywallet',array('type'=>2))}";
+                    } else if (data.code == 2) {
+                        alert(data.msg);
+                        location.href = "{:url('userinfo/info')}";
+                    } else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
     }
     
     //正整数

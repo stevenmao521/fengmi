@@ -9,6 +9,7 @@
         <meta http-equiv="Cache" content="no-cache">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <title>{$title}</title>
+        <link href="__STATIC__/bee/css/zl.css?v1" rel="stylesheet" />
         <link href="__STATIC__/bee/css/main.css?v2" rel="stylesheet" />
         <link href="__STATIC__/bee/css/wallet.css?1" rel="stylesheet" />
         <link href="__STATIC__/bee/css/user.css?1" rel="stylesheet" />
@@ -26,6 +27,7 @@
             <a class="infor" href="javascript:;">
                 <p>{$info.nickname}</p>
                 <p class="gray">{$info.level_name} - {$info.serviceid}</p>
+                <p class="gray">已累计销售：{$all}瓶</p>
             </a>
             <a class="userheard" href="userinfor.html">
                 <img src="{$info.avatarurl}" />
@@ -99,5 +101,7 @@
                 </div>
             </div>
         </div>
+        <div style="height:1.45rem"></div>
+        {include file="common/footucenter"/}
     </body>
 </html>

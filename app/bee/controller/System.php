@@ -573,6 +573,7 @@ class System extends Common {
         #年终奖单
         db("yearorder")->where("id>0")->delete();
         db("yearorderdetail")->where("id>0")->delete();
+        db("cashorder")->where("id>0")->delete();
         
         #升级日志
         $levellog = $this->levellog_model->where("uid>0")->delete();

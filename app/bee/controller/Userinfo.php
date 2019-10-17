@@ -506,10 +506,12 @@ class Userinfo extends Common {
         $cash_data = array();
         $cash_data['uid'] = $uid;
         $cash_data['money'] = $money;
+        $cash_data['docash'] = ($money/10)*9;
         $cash_data['bankname'] = $uinfo['bankname'];
         $cash_data['realname'] = $uinfo['realname'];
         $cash_data['bankcode'] = $uinfo['bankcode'];
         $cash_data['status'] = 1;
+        $cash_data['orderid'] = mz_get_order_sn();
         $cash_data['createtime'] = time();
         $res = $this->cash_order->insert($cash_data);
         if ($res) {

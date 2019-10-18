@@ -47,6 +47,8 @@ class Passport extends Common {
         }
         
         $serviceid = $parent['serviceid'];
+        #存储
+        session("parentid", $serviceid);
         
         $wx_info = db("wx_user")->find();
         $appid = $wx_info['appid'];
@@ -73,6 +75,11 @@ class Passport extends Common {
         $appid = $wx_info['appid'];
         $secret = $wx_info['appsecret'];
         
+        if ($state == 1) {
+            if (session("parentid")){
+                $state = session("parentid");
+            }
+        }
         
         #echo $code;
         #db("smscode")->insert(array('type'=>2,'mobile'=>13452415831,'code'=>$code));
@@ -138,7 +145,7 @@ class Passport extends Common {
                     if ($parent['id']) {
                         db('membership')->insert(array('uid'=>$res, 'parentid'=>$parent['id'], 'createtime'=>time()));
                     } 
-                    $this->mem_model->where("id='{$res}'")->update(array("serviceid"=>"FM".rand(10000,99999).$res));
+                    $this->mem_model->where("id='{$res}'")->update(array("serviceid"=>"FM".$res));
                     session("userid", $res);
                     $this->redirect("bee/Passport/bindPhone",["state"=>$state]);
                 } else {

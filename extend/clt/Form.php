@@ -722,7 +722,7 @@ class Form{
         if($action=='add' or $ext==''){
             $value ="__STATIC__/common/images/file.png";
         }else{
-            $value = "__STATIC__/common/images/".$ext.".png";
+            $value = "__STATIC__/common/images/timg.png";
         }
         $thumbstr ='<div class="layui-input-4"><input type="hidden" name="'.$field.'" id="'.$field.'fval" value="'.$this->data[$field].'"><div class="layui-upload">';
         $thumbstr .='<button type="button" class="layui-btn layui-btn-primary" id="'.$info['class'].'"><i class="icon icon-upload3"></i>点击上传</button>';
@@ -738,7 +738,7 @@ class Form{
                                 title: '上传文件',
                                 ext: '".$info['setup']['upload_allowext']."', 
                                 done: function(res){
-                                    $('#".$field."File').attr('src', '__STATIC__/common/images/'+res.ext+'.png');
+                                    $('#".$field."File').attr('src', '__STATIC__/common/images/timg.png');
                                     $('#".$field."fval').val(res.url);
                                 }
                             });
